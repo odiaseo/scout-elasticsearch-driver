@@ -1,17 +1,15 @@
 <?php
 
-namespace ScoutElastic\Console;
+namespace SynergyScoutElastic\Console;
 
-use Illuminate\Console\Command;
-use ScoutElastic\Console\Features\requiresIndexConfiguratorArgument;
-use ScoutElastic\Facades\ElasticClient;
-use ScoutElastic\Payloads\IndexPayload;
+use SynergyScoutElastic\Console\Features\RequiresIndexConfiguratorArgument;
+use SynergyScoutElastic\Payloads\IndexPayload;
 
-class ElasticIndexDropCommand extends Command
+class ElasticIndexDropCommand extends BaseCommand
 {
-    use requiresIndexConfiguratorArgument;
+    use RequiresIndexConfiguratorArgument;
 
-    protected $name = 'elastic:drop-index';
+    protected $name = 'search:drop-index';
 
     protected $description = 'Drop an Elasticsearch index';
 
@@ -24,7 +22,7 @@ class ElasticIndexDropCommand extends Command
         $payload = (new IndexPayload($configurator))
             ->get();
 
-        ElasticClient::indices()
+        $this->client->indices()
             ->delete($payload);
 
         $this->info(sprintf(

@@ -1,11 +1,11 @@
 <?php
 
-namespace ScoutElastic\Console\Features;
+namespace SynergyScoutElastic\Console\Features;
 
-use ScoutElastic\IndexConfigurator;
+use SynergyScoutElastic\IndexConfigurator;
 use Symfony\Component\Console\Input\InputArgument;
 
-trait requiresIndexConfiguratorArgument
+trait RequiresIndexConfiguratorArgument
 {
     /**
      * @return IndexConfigurator

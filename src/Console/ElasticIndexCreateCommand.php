@@ -1,17 +1,15 @@
 <?php
 
-namespace ScoutElastic\Console;
+namespace SynergyScoutElastic\Console;
 
-use Illuminate\Console\Command;
-use ScoutElastic\Console\Features\requiresIndexConfiguratorArgument;
-use ScoutElastic\Facades\ElasticClient;
-use ScoutElastic\Payloads\IndexPayload;
+use SynergyScoutElastic\Console\Features\RequiresIndexConfiguratorArgument;
+use SynergyScoutElastic\Payloads\IndexPayload;
 
-class ElasticIndexCreateCommand extends Command
+class ElasticIndexCreateCommand extends BaseCommand
 {
-    use requiresIndexConfiguratorArgument;
+    use RequiresIndexConfiguratorArgument;
 
-    protected $name = 'elastic:create-index';
+    protected $name = 'search:create-index';
 
     protected $description = 'Create an Elasticsearch index';
 
@@ -26,8 +24,7 @@ class ElasticIndexCreateCommand extends Command
             ->setIfNotEmpty('body.mappings._default_', $configurator->getDefaultMapping())
             ->get();
 
-        ElasticClient::indices()
-            ->create($payload);
+        $this->client->indices()->create($payload);
 
         $this->info(sprintf(
             'The index %s was created!',

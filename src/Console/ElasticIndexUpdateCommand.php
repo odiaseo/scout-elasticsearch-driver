@@ -1,18 +1,16 @@
 <?php
 
-namespace ScoutElastic\Console;
+namespace SynergyScoutElastic\Console;
 
-use Illuminate\Console\Command;
-use ScoutElastic\Console\Features\requiresIndexConfiguratorArgument;
-use ScoutElastic\Facades\ElasticClient;
 use Exception;
-use ScoutElastic\Payloads\IndexPayload;
+use SynergyScoutElastic\Console\Features\RequiresIndexConfiguratorArgument;
+use SynergyScoutElastic\Payloads\IndexPayload;
 
-class ElasticIndexUpdateCommand extends Command
+class ElasticIndexUpdateCommand extends BaseCommand
 {
-    use requiresIndexConfiguratorArgument;
+    use RequiresIndexConfiguratorArgument;
 
-    protected $name = 'elastic:update-index';
+    protected $name = 'search:update-index';
 
     protected $description = 'Update settings and mappings of an Elasticsearch index';
 
@@ -24,7 +22,7 @@ class ElasticIndexUpdateCommand extends Command
 
         $indexPayload = (new IndexPayload($configurator))->get();
 
-        $indices = ElasticClient::indices();
+        $indices = $this->client->indices();
 
         if (!$indices->exists($indexPayload)) {
             $this->error(sprintf(

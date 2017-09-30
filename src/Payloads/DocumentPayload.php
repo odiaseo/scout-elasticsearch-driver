@@ -1,6 +1,6 @@
 <?php
 
-namespace ScoutElastic\Payloads;
+namespace SynergyScoutElastic\Payloads;
 
 use Exception;
 use Illuminate\Database\Eloquent\Model;

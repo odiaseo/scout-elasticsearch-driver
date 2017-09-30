@@ -1,12 +1,12 @@
 <?php
 
-namespace ScoutElastic\DataCollector;
+namespace SynergyScoutElastic\DataCollector;
 
 use DebugBar\DataCollector\DataCollector;
 use DebugBar\DataCollector\DataCollectorInterface;
 use DebugBar\DataCollector\Renderable;
 use Laravel\Scout\EngineManager;
-use ScoutElastic\ElasticEngine;
+use SynergyScoutElastic\ElasticEngine;
 
 class ElasticsearchDataCollector extends DataCollector implements DataCollectorInterface, Renderable
 {

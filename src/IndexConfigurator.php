@@ -1,6 +1,6 @@
 <?php
 
-namespace ScoutElastic;
+namespace SynergyScoutElastic;
 
 use Illuminate\Support\Str;
 

@@ -1,21 +1,15 @@
 <?php
 
-namespace ScoutElastic\Builders;
+namespace SynergyScoutElastic\Builders;
 
 use Laravel\Scout\Builder;
 
 class FilterBuilder extends Builder
 {
     public $wheres = [
-        'must' => [],
+        'must'     => [],
         'must_not' => []
     ];
-
-    public function __construct($model, $callback = null)
-    {
-        $this->model = $model;
-        $this->callback = $callback;
-    }
 
     /**
      * Supported operators are =, &gt;, &lt;, &gt;=, &lt;=, &lt;&gt;
@@ -59,6 +53,13 @@ class FilterBuilder extends Builder
                 $this->wheres['must_not'][] = ['term' => [$field => $value]];
                 break;
         }
+
+        return $this;
+    }
+
+    public function orderBy($column, $direction = 'asc')
+    {
+        $this->orders[] = [$column => strtolower($direction) == 'asc' ? 'asc' : 'desc'];
 
         return $this;
     }
@@ -108,13 +109,6 @@ class FilterBuilder extends Builder
     public function whereRegexp($field, $value, $flags = 'ALL')
     {
         $this->wheres['must'][] = ['regexp' => [$field => ['value' => $value, 'flags' => $flags]]];
-
-        return $this;
-    }
-
-    public function orderBy($column, $direction = 'asc')
-    {
-        $this->orders[] = [$column => strtolower($direction) == 'asc' ? 'asc' : 'desc'];
 
         return $this;
     }

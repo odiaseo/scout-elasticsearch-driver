@@ -1,21 +1,20 @@
 <?php
 
-namespace ScoutElastic\Console;
+namespace SynergyScoutElastic\Console;
 
-use Illuminate\Console\Command;
-use ScoutElastic\Console\Features\requiresModelArgument;
-use ScoutElastic\Facades\ElasticClient;
-use ScoutElastic\Payloads\TypePayload;
+use SynergyScoutElastic\Console\Features\RequiresModelArgument;
+use SynergyScoutElastic\Payloads\TypePayload;
 
-class ElasticUpdateMappingCommand extends Command
+class ElasticUpdateMappingCommand extends BaseCommand
 {
-    use requiresModelArgument;
+    use RequiresModelArgument;
 
-    protected $name = 'elastic:update-mapping';
+    protected $name = 'search:update-mapping';
 
-    protected $description = 'Update a model mapping';
+    protected $description = 'Update model elasticsearch mapping';
 
-    public function handle() {
+    public function handle()
+    {
         if (!$model = $this->getModel()) {
             return;
         }
@@ -31,10 +30,10 @@ class ElasticUpdateMappingCommand extends Command
         }
 
         $payload = (new TypePayload($model))
-            ->set('body.'.$model->searchableAs(), $mapping)
+            ->set('body.' . $model->searchableAs(), $mapping)
             ->get();
 
-        ElasticClient::indices()
+        $this->client->indices()
             ->putMapping($payload);
 
         $this->info(sprintf(

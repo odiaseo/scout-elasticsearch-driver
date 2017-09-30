@@ -2,7 +2,7 @@
 
 namespace DummyNamespace;
 
-use ScoutElastic\IndexConfigurator;
+use SynergyScoutElastic\IndexConfigurator;
 
 class DummyClass extends IndexConfigurator
 {
