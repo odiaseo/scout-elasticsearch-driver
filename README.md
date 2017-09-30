@@ -1,10 +1,10 @@
 # Scout Elasticsearch Driver
 
-[![Packagist](https://img.shields.io/packagist/v/babenkoivan/scout-elasticsearch-driver.svg)](https://packagist.org/packages/babenkoivan/scout-elasticsearch-driver)
-[![Packagist](https://img.shields.io/packagist/dt/babenkoivan/scout-elasticsearch-driver.svg)](https://packagist.org/packages/babenkoivan/scout-elasticsearch-driver)
-[![Gitter](https://img.shields.io/gitter/room/nwjs/nw.js.svg)](https://gitter.im/scout-elasticsearch-driver/Lobby)
+[![GitHub release](https://img.shields.io/github/release/qubyte/rubidium.svg)](https://github.com/odiaseo/scout-elasticsearch-driver)
+[![Packagist](https://img.shields.io/packagist/dm/doctrine/orm.svg)](https://packagist.org/packages/synergy/scout-elasticsearch-driver)
+[![Build Status](https://travis-ci.org/odiaseo/scout-elasticsearch-driver.svg?branch=master)](https://travis-ci.org/odiaseo/scout-elasticsearch-driver)
+[![Coverage Status](https://coveralls.io/repos/github/odiaseo/scout-elasticsearch-driver/badge.svg?branch=master)](https://coveralls.io/github/odiaseo/scout-elasticsearch-driver?branch=master)
 
-:exclamation: The project has a [chat room](https://gitter.im/scout-elasticsearch-driver/Lobby) on Gitter!
 
 This package offers advanced functionality for searching and filtering data in Elasticsearch.
 Check out its [features](#features)!
@@ -24,10 +24,6 @@ Check out its [features](#features)!
 * [Available filters](#available-filters)
 * [Debug](#debug)
 
-## Tutorial
-
-For your convenience I wrote step-by-step tutorial - [How to make Laravel and Elasticsearch become friends](https://medium.com/@babenko.i.a/how-to-make-laravel-and-elasticsearch-become-friends-55ed7690331c). 
-There are information about Elasticsearch installation and the package usage examples, don't miss it!    
 
 ## Features
 
@@ -50,7 +46,7 @@ The package has been tested in the following configuration:
 Use composer to install the package:
 
 ```
-composer require babenkoivan/scout-elasticsearch-driver
+composer require synergy/scout-elasticsearch-driver
 ```
 
 ## Configuration
@@ -59,10 +55,10 @@ To configure the package you need to publish settings first:
 
 ```
 php artisan vendor:publish --provider="Laravel\Scout\ScoutServiceProvider"
-php artisan vendor:publish --provider="SynergyScoutElastic\SynergyScoutElasticServiceProvider"
+php artisan vendor:publish --provider="SynergyScoutElastic\providers\SynergyScoutElasticServiceProvider"
 ```
 
-Then, set the driver setting to `elastic` in the `config/scout.php` file and configure the driver itself in the `config/scout_elastic.php` file.
+Then, set the driver setting to `elastic` in the `config/scout.php` file and configure the driver itself in the `config/synergy-scout-elastic.php` file.
 There are two available options:
 
 Option | Description
@@ -150,10 +146,11 @@ After executing the command you'll find the file `MyModel.php` in you `app` fold
 
 namespace App;
 
-use SynergyScoutElastic\Searchable;
+use SynergyScoutElastic\Models\Searchable;
 use Illuminate\Database\Eloquent\Model;
+use SynergyScoutElastic\Models\SearchableInterface;
 
-class MyModel extends Model
+class MyModel extends Model implements SearchableInterface
 {
     use Searchable;
 
@@ -317,10 +314,11 @@ To determine default search rules for a model just add a property:
 
 namespace App;
 
-use SynergyScoutElastic\Searchable;
+use SynergyScoutElastic\Models\Searchable;
 use Illuminate\Database\Eloquent\Model;
+use SynergyScoutElastic\Models\SearchableInterface;
 
-class MyModel extends Model
+class MyModel extends Model implements SearchableInterface
 {
     use Searchable;
     

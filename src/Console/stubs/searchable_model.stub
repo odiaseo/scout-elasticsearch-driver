@@ -2,10 +2,11 @@
 
 namespace DummyNamespace;
 
-use SynergyScoutElastic\Searchable;
+use SynergyScoutElastic\Models\Searchable;
 use Illuminate\Database\Eloquent\Model;
+use SynergyScoutElastic\Models\SearchableInterface;
 
-class DummyClass extends Model
+class DummyClass extends Model implements SearchableInterface
 {
     use Searchable;
 
