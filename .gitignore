@@ -1,2 +1,7 @@
 vendor
 composer.lock
+phpunit.xml
+coverage-report
+.idea
+.DS_Store
+build

@@ -1,8 +1,8 @@
 <?php
 
-namespace ScoutElastic;
+namespace SynergyScoutElastic;
 
-use ScoutElastic\Builders\SearchBuilder;
+use SynergyScoutElastic\Builders\SearchBuilder;
 
 class SearchRule
 {

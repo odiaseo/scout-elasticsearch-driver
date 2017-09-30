@@ -1,6 +1,6 @@
 <?php
 
-namespace ScoutElastic\Console;
+namespace SynergyScoutElastic\Console;
 
 use Illuminate\Foundation\Console\ModelMakeCommand;
 use Symfony\Component\Console\Input\InputOption;

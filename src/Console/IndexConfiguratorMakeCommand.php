@@ -1,6 +1,6 @@
 <?php
 
-namespace ScoutElastic\Console;
+namespace SynergyScoutElastic\Console;
 
 use Illuminate\Console\GeneratorCommand;
 

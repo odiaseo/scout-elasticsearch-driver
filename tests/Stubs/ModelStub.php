@@ -1,11 +1,12 @@
 <?php
 
-namespace ScoutElastic\Tests\Stubs;
+namespace SynergyScoutElastic\Stubs;
 
 use Illuminate\Database\Eloquent\Model;
-use ScoutElastic\Searchable;
+use SynergyScoutElastic\Models\Searchable;
+use SynergyScoutElastic\Models\SearchableInterface;
 
-class ModelStub extends Model
+class ModelStub extends Model implements SearchableInterface
 {
     use Searchable;
 
@@ -17,12 +18,12 @@ class ModelStub extends Model
 
     protected $mapping = [
         'properties' => [
-            'id' => [
-                'type' => 'integer',
+            'id'         => [
+                'type'  => 'integer',
                 'index' => 'not_analyzed',
             ],
             'test_field' => [
-                'type' => 'string',
+                'type'     => 'string',
                 'analyzer' => 'standard'
             ]
         ]

@@ -1,8 +1,8 @@
 <?php
 
-namespace ScoutElastic\Payloads;
+namespace SynergyScoutElastic\Payloads;
 
-use ScoutElastic\IndexConfigurator;
+use SynergyScoutElastic\IndexConfigurator;
 
 class IndexPayload
 {

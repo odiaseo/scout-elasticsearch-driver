@@ -1,8 +1,8 @@
 <?php
 
-namespace ScoutElastic\Tests\Stubs;
+namespace SynergyScoutElastic\Stubs;
 
-use ScoutElastic\IndexConfigurator;
+use SynergyScoutElastic\IndexConfigurator;
 
 class IndexConfiguratorStub extends IndexConfigurator
 {

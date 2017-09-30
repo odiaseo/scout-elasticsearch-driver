@@ -59,7 +59,7 @@ To configure the package you need to publish settings first:
 
 ```
 php artisan vendor:publish --provider="Laravel\Scout\ScoutServiceProvider"
-php artisan vendor:publish --provider="ScoutElastic\ScoutElasticServiceProvider"
+php artisan vendor:publish --provider="SynergyScoutElastic\SynergyScoutElasticServiceProvider"
 ```
 
 Then, set the driver setting to `elastic` in the `config/scout.php` file and configure the driver itself in the `config/scout_elastic.php` file.
@@ -87,7 +87,7 @@ You can specify index name, settings and default mapping like in the following e
 
 namespace App;
 
-use ScoutElastic\IndexConfigurator;
+use SynergyScoutElastic\IndexConfigurator;
 
 class MyIndexConfigurator extends IndexConfigurator
 {
@@ -150,7 +150,7 @@ After executing the command you'll find the file `MyModel.php` in you `app` fold
 
 namespace App;
 
-use ScoutElastic\Searchable;
+use SynergyScoutElastic\Searchable;
 use Illuminate\Database\Eloquent\Model;
 
 class MyModel extends Model
@@ -276,7 +276,7 @@ In the file `app/MySearchRule.php` you will find a class definition:
 
 namespace App;
 
-use ScoutElastic\SearchRule;
+use SynergyScoutElastic\SearchRule;
 
 class MySearch extends SearchRule
 {
@@ -317,7 +317,7 @@ To determine default search rules for a model just add a property:
 
 namespace App;
 
-use ScoutElastic\Searchable;
+use SynergyScoutElastic\Searchable;
 use Illuminate\Database\Eloquent\Model;
 
 class MyModel extends Model

@@ -1,193 +1,178 @@
 <?php
 
-namespace ScoutElastic\Tests;
+namespace SynergyScoutElastic;
 
-use Mockery;
-use ScoutElastic\Console\ElasticIndexCreateCommand;
-use ScoutElastic\Console\ElasticIndexDropCommand;
-use ScoutElastic\Console\ElasticIndexUpdateCommand;
-use ScoutElastic\Console\ElasticUpdateMappingCommand;
-use ScoutElastic\Tests\Stubs\IndexConfiguratorStub;
-use ScoutElastic\Tests\Stubs\ModelStub;
+use Elasticsearch\Namespaces\IndicesNamespace;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
+use SynergyScoutElastic\Client\ClientInterface;
+use SynergyScoutElastic\Stubs\ElasticIndexCreateCommandStub;
+use SynergyScoutElastic\Stubs\ElasticIndexDropCommandStub;
+use SynergyScoutElastic\Stubs\ElasticIndexUpdateCommandStub;
+use SynergyScoutElastic\Stubs\ElasticUpdateMappingCommandStub;
+use SynergyScoutElastic\Stubs\IndexConfiguratorStub;
+use SynergyScoutElastic\Stubs\ModelStub;
 
 class ConsoleCommandsTest extends TestCase
 {
-    private function fireCommand($class, array $arguments)
+    public function testIfTheCreateIndexCommandBuildsCorrectResponse()
     {
-        $command = Mockery::mock($class)
-            ->makePartial()
-            ->shouldReceive('line')
-            ->andReturnNull()
-            ->getMock();
-
-        foreach ($arguments as $key => $value) {
-            $command->shouldReceive('argument')
-                ->with($key)
-                ->andReturn($value)
-                ->getMock();
-        }
-
-        $command->handle();
-    }
-
-    public function test_if_the_create_index_command_builds_correct_response()
-    {
-        $this->mockClient()
-
-            ->shouldReceive('indices')
-            ->andReturnSelf()
-            ->getMock()
-
-            ->shouldReceive('create')
-            ->with([
-                'index' => 'test_index',
-                'body' => [
-                    'settings' => [
-                        'analysis' => [
-                            'analyzer' => [
-                                'test_analyzer' => [
-                                    'type' => 'custom',
-                                    'tokenizer' => 'whitespace'
-                                ]
-                            ]
-                        ]
-                    ],
-                    'mappings' => [
-                        '_default_' => [
-                            'properties' => [
-                                'test_default_field' => [
-                                    'type' => 'string',
-                                    'analyzer' => 'test_analyzer'
-                                ]
+        $payload = [
+            'index' => 'test_index',
+            'body'  => [
+                'settings' => [
+                    'analysis' => [
+                        'analyzer' => [
+                            'test_analyzer' => [
+                                'type'      => 'custom',
+                                'tokenizer' => 'whitespace'
                             ]
                         ]
                     ]
-                ]
-            ]);
-
-        $this->fireCommand(ElasticIndexCreateCommand::class, [
-            'index-configurator' => IndexConfiguratorStub::class
-        ]);
-
-        $this->addToAssertionCount(1);
-    }
-
-    public function test_if_the_update_index_command_builds_correct_response()
-    {
-        $this->mockClient()
-
-            ->shouldReceive('indices')
-            ->andReturnSelf()
-            ->getMock()
-
-            ->shouldReceive('exists')
-            ->andReturn(true)
-            ->getMock()
-
-            ->shouldReceive('close')
-            ->andReturnNull()
-            ->getMock()
-
-            ->shouldReceive('open')
-            ->andReturnNull()
-            ->getMock()
-
-            ->shouldReceive('putSettings')
-            ->with([
-                'index' => 'test_index',
-                'body' => [
-                    'settings' => [
-                        'analysis' => [
-                            'analyzer' => [
-                                'test_analyzer' => [
-                                    'type' => 'custom',
-                                    'tokenizer' => 'whitespace'
-                                ]
-                            ]
-                        ]
-                    ]
-                ]
-            ])
-
-            ->shouldReceive('putMapping')
-            ->with([
-                'index' => 'test_index',
-                'type' => '_default_',
-                'body' => [
+                ],
+                'mappings' => [
                     '_default_' => [
                         'properties' => [
                             'test_default_field' => [
-                                'type' => 'string',
+                                'type'     => 'string',
                                 'analyzer' => 'test_analyzer'
                             ]
                         ]
                     ]
                 ]
-            ]);
+            ]
+        ];
+        $indices = $this->prophesize(IndicesNamespace::class);
+        $client  = $this->prophesize(ClientInterface::class);
+        $output  = $this->prophesize(OutputInterface::class);
 
-        $this->fireCommand(ElasticIndexUpdateCommand::class, [
-            'index-configurator' => IndexConfiguratorStub::class
-        ]);
+        $client->indices()->willReturn($indices->reveal());
+        $indices->create($payload)->shouldBeCalled();
 
+        $input   = $this->getMockInputs(['index-configurator' => IndexConfiguratorStub::class]);
+        $command = new ElasticIndexCreateCommandStub($client->reveal(), $input, $output->reveal());
+
+        $command->handle();
         $this->addToAssertionCount(1);
     }
 
-    public function test_if_the_drop_index_command_builds_correct_response()
+    private function getMockInputs(array $arguments)
     {
-        $this->mockClient()
+        $input = $this->prophesize(InputInterface::class);
+        $input->getArguments()->willReturn($arguments);
 
-            ->shouldReceive('indices')
-            ->andReturnSelf()
-            ->getMock()
+        foreach ($arguments as $key => $value) {
+            $input->getArgument($key)->willReturn($value);
 
-            ->shouldReceive('delete')
-            ->with([
-                'index' => 'test_index',
-            ]);
+        }
 
-        $this->fireCommand(ElasticIndexDropCommand::class, [
-            'index-configurator' => IndexConfiguratorStub::class
-        ]);
-
-        $this->addToAssertionCount(1);
+        return $input->reveal();
     }
 
-    public function test_if_the_update_mapping_command_builds_correct_response()
+    public function testIfTheUpdateIndexCommandBuildsCorrectResponse()
     {
-        $this->mockClient()
-
-            ->shouldReceive('indices')
-            ->andReturnSelf()
-            ->getMock()
-
-            ->shouldReceive('putMapping')
-            ->with([
-                'index' => 'test_index',
-                'type' => 'test_table',
-                'body' => [
-                    'test_table' => [
-                        'properties' => [
-                            'test_default_field' => [
-                                'type' => 'string',
-                                'analyzer' => 'test_analyzer'
-                            ],
-                            'id' => [
-                                'type' => 'integer',
-                                'index' => 'not_analyzed'
-                            ],
-                            'test_field' => [
-                                'type' => 'string',
-                                'analyzer' => 'standard'
+        $payload = [
+            'index' => 'test_index',
+            'body'  => [
+                'settings' => [
+                    'analysis' => [
+                        'analyzer' => [
+                            'test_analyzer' => [
+                                'type'      => 'custom',
+                                'tokenizer' => 'whitespace'
                             ]
                         ]
                     ]
                 ]
-            ]);
+            ]
+        ];
 
-        $this->fireCommand(ElasticUpdateMappingCommand::class, [
-            'model' => ModelStub::class
-        ]);
+        $mapping = [
+            'index' => 'test_index',
+            'type'  => '_default_',
+            'body'  => [
+                '_default_' => [
+                    'properties' => [
+                        'test_default_field' => [
+                            'type'     => 'string',
+                            'analyzer' => 'test_analyzer'
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        $indices = $this->prophesize(IndicesNamespace::class);
+        $client  = $this->prophesize(ClientInterface::class);
+        $output  = $this->prophesize(OutputInterface::class);
+
+        $client->indices()->willReturn($indices->reveal());
+        $indices->putSettings($payload)->willReturn(null);
+        $indices->putMapping($mapping)->willReturn(null);
+        $indices->close(["index" => "test_index"])->willReturn(null);
+        $indices->open(["index" => "test_index"])->willReturn(null);
+        $indices->exists(["index" => "test_index"])->willReturn(true);
+
+        $input   = $this->getMockInputs(['index-configurator' => IndexConfiguratorStub::class]);
+        $command = new ElasticIndexUpdateCommandStub($client->reveal(), $input, $output->reveal());
+
+        $command->handle();
+        $this->addToAssertionCount(1);
+    }
+
+    public function testIfTheDropIndexCommandBuildsCorrectResponse()
+    {
+
+        $indices = $this->prophesize(IndicesNamespace::class);
+        $client  = $this->prophesize(ClientInterface::class);
+        $output  = $this->prophesize(OutputInterface::class);
+
+        $input   = $this->getMockInputs(['index-configurator' => IndexConfiguratorStub::class]);
+        $command = new ElasticIndexDropCommandStub($client->reveal(), $input, $output->reveal());
+
+        $client->indices()->willReturn($indices->reveal());
+        $indices->delete(["index" => "test_index"])->willReturn(null);
+        $command->handle();
 
         $this->addToAssertionCount(1);
+    }
+
+    public function testIfTheUpdateMappingCommandBuildsCorrectResponse()
+    {
+        $mapping = [
+            'index' => 'test_index',
+            'type'  => 'test_table',
+            'body'  => [
+                'test_table' => [
+                    'properties' => [
+                        'test_default_field' => [
+                            'type'     => 'string',
+                            'analyzer' => 'test_analyzer'
+                        ],
+                        'id'                 => [
+                            'type'  => 'integer',
+                            'index' => 'not_analyzed'
+                        ],
+                        'test_field'         => [
+                            'type'     => 'string',
+                            'analyzer' => 'standard'
+                        ]
+                    ]
+                ]
+            ]
+        ];
+        $indices = $this->prophesize(IndicesNamespace::class);
+        $client  = $this->prophesize(ClientInterface::class);
+        $output  = $this->prophesize(OutputInterface::class);
+
+        $input   = $this->getMockInputs(['model' => ModelStub::class]);
+        $command = new ElasticUpdateMappingCommandStub($client->reveal(), $input, $output->reveal());
+
+        $client->indices()->willReturn($indices->reveal());
+        $indices->putMapping($mapping)->shouldBeCalled();
+        $command->handle();
+
+        $this->addToAssertionCount(1);
+
     }
 }

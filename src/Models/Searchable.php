@@ -1,11 +1,13 @@
 <?php
 
-namespace ScoutElastic;
+namespace SynergyScoutElastic\Models;
 
 use Laravel\Scout\Searchable as ScoutSearchable;
-use ScoutElastic\Builders\FilterBuilder;
-use ScoutElastic\Builders\SearchBuilder;
-use \Exception;
+use SynergyScoutElastic\Builders\FilterBuilder;
+use SynergyScoutElastic\Builders\SearchBuilder;
+use Exception;
+use SynergyScoutElastic\IndexConfigurator;
+use SynergyScoutElastic\SearchRule;
 
 trait Searchable {
     use ScoutSearchable {

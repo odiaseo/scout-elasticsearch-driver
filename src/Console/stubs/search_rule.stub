@@ -2,7 +2,7 @@
 
 namespace DummyNamespace;
 
-use ScoutElastic\SearchRule;
+use SynergyScoutElastic\SearchRule;
 
 class DummyClass extends SearchRule
 {

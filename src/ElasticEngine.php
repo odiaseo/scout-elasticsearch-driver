@@ -1,17 +1,19 @@
 <?php
 
-namespace ScoutElastic;
+namespace SynergyScoutElastic;
 
-use Artisan;
-use Laravel\Scout\Builder;
-use Laravel\Scout\Engines\Engine;
-use ScoutElastic\Builders\SearchBuilder;
-use ScoutElastic\Facades\ElasticClient;
+use Illuminate\Config\Repository;
+use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
-use ScoutElastic\Payloads\DocumentPayload;
-use ScoutElastic\Payloads\TypePayload;
+use Laravel\Scout\Builder;
+use Laravel\Scout\Engines\Engine;
 use stdClass;
+use SynergyScoutElastic\Builders\SearchBuilder;
+use SynergyScoutElastic\Client\ClientInterface;
+use SynergyScoutElastic\Models\SearchableInterface;
+use SynergyScoutElastic\Payloads\DocumentPayload;
+use SynergyScoutElastic\Payloads\TypePayload;
 
 class ElasticEngine extends Engine
 {
@@ -21,16 +23,26 @@ class ElasticEngine extends Engine
 
     protected $result;
 
-    public function __construct()
+    private $elasticClient;
+
+    private $kernel;
+
+    public function __construct(Kernel $kernel, ClientInterface $elasticClient, Repository $config)
     {
-        $this->updateMapping = config('scout_elastic.update_mapping');
+        $this->elasticClient = $elasticClient;
+        $this->kernel        = $kernel;
+        $this->updateMapping = $config->get('scout_elastic.update_mapping');
     }
 
+    /**
+     * @param Collection $models
+     */
     public function update($models)
     {
         $models->each(function ($model) {
+            /** @var $model SearchableInterface | Model */
             if ($this->updateMapping) {
-                Artisan::call(
+                $this->kernel->call(
                     'elastic:update-mapping',
                     ['model' => get_class($model)]
                 );
@@ -46,7 +58,7 @@ class ElasticEngine extends Engine
                 ->set('body', $array)
                 ->get();
 
-            ElasticClient::index($payload);
+            $this->elasticClient->index($payload);
         });
 
         $this->updateMapping = false;
@@ -58,42 +70,45 @@ class ElasticEngine extends Engine
             $payload = (new DocumentPayload($model))
                 ->get();
 
-            ElasticClient::delete($payload);
+            $this->elasticClient->delete($payload);
         });
     }
 
-    protected function buildSearchQueryPayload(Builder $builder, $queryPayload, array $options = [])
+    public function search(Builder $builder)
     {
-        foreach ($builder->wheres as $clause => $filters) {
-            if (count($filters) == 0) {
-                continue;
-            }
+        return $this->performSearch($builder);
+    }
 
-            if (!array_has($queryPayload, 'filter.bool.'.$clause)) {
-                array_set($queryPayload, 'filter.bool.'.$clause, []);
-            }
+    protected function performSearch(Builder $builder, array $options = [])
+    {
 
-            $queryPayload['filter']['bool'][$clause] = array_merge(
-                $queryPayload['filter']['bool'][$clause],
-                $filters
+        if ($builder->callback) {
+            $this->query = $builder->query;
+
+            return $this->result = call_user_func(
+                $builder->callback,
+                $this->elasticClient,
+                $builder->query,
+                $options
             );
         }
 
-        $payload = (new TypePayload($builder->model))
-            ->setIfNotEmpty('body.query.bool', $queryPayload)
-            ->setIfNotEmpty('body.sort', $builder->orders)
-            ->setIfNotEmpty('body.explain', $options['explain'] ?? null)
-            ->setIfNotEmpty('body.profile', $options['profile'] ?? null);
+        $result = null;
 
-        if ($size = isset($options['limit']) ? $options['limit'] : $builder->limit) {
-            $payload->set('body.size', $size);
+        $this->buildSearchQueryPayloadCollection($builder, $options)->each(function ($payload) use (&$result) {
+            $result = $this->elasticClient->search($payload);
 
-            if (isset($options['page'])) {
-                $payload->set('body.from', ($options['page'] - 1) * $size);
+            $this->query  = array_get($payload, 'body.query');
+            $this->result = $result;
+
+            if ($this->getTotalCount($result) > 0) {
+                return false;
             }
-        }
+        });
 
-        return $payload->get();
+        $this->result = $result;
+
+        return $result;
     }
 
     public function buildSearchQueryPayloadCollection(Builder $builder, array $options = [])
@@ -138,46 +153,50 @@ class ElasticEngine extends Engine
         return $payloadCollection;
     }
 
-    protected function performSearch(Builder $builder, array $options = []) {
+    protected function buildSearchQueryPayload(Builder $builder, $queryPayload, array $options = [])
+    {
+        foreach ($builder->wheres as $clause => $filters) {
+            if (count($filters) == 0) {
+                continue;
+            }
 
-        if ($builder->callback) {
-            $this->query = $builder->query;
-            return $this->result = call_user_func(
-                $builder->callback,
-                ElasticClient::getFacadeRoot(),
-                $builder->query,
-                $options
+            if (!array_has($queryPayload, 'filter.bool.' . $clause)) {
+                array_set($queryPayload, 'filter.bool.' . $clause, []);
+            }
+
+            $queryPayload['filter']['bool'][$clause] = array_merge(
+                $queryPayload['filter']['bool'][$clause],
+                $filters
             );
         }
 
-        $result = null;
+        $payload = (new TypePayload($builder->model))
+            ->setIfNotEmpty('body.query.bool', $queryPayload)
+            ->setIfNotEmpty('body.sort', $builder->orders)
+            ->setIfNotEmpty('body.explain', $options['explain'] ?? null)
+            ->setIfNotEmpty('body.profile', $options['profile'] ?? null);
 
-        $this->buildSearchQueryPayloadCollection($builder, $options)->each(function($payload) use (&$result) {
-            $result = ElasticClient::search($payload);
+        if ($size = isset($options['limit']) ? $options['limit'] : $builder->limit) {
+            $payload->set('body.size', $size);
 
-            $this->query  = array_get($payload, 'body.query');
-            $this->result = $result;
-
-            if ($this->getTotalCount($result) > 0) {
-                return false;
+            if (isset($options['page'])) {
+                $payload->set('body.from', ($options['page'] - 1) * $size);
             }
-        });
+        }
 
-        $this->result = $result;
-
-        return $result;
+        return $payload->get();
     }
 
-    public function search(Builder $builder)
+    public function getTotalCount($results)
     {
-        return $this->performSearch($builder);
+        return $results['hits']['total'];
     }
 
     public function paginate(Builder $builder, $perPage, $page)
     {
         return $this->performSearch($builder, [
             'limit' => $perPage,
-            'page' => $page
+            'page'  => $page
         ]);
     }
 
@@ -201,7 +220,23 @@ class ElasticEngine extends Engine
             ->setIfNotEmpty('body', $query)
             ->get();
 
-        return ElasticClient::search($payload);
+        return $this->elasticClient->search($payload);
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getQuery()
+    {
+        return $this->query;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getResult()
+    {
+        return $this->result;
     }
 
     public function mapIds($results)
@@ -220,36 +255,18 @@ class ElasticEngine extends Engine
         $modelKey = $model->getKeyName();
 
         $models = $model->whereIn($modelKey, $ids)
-                        ->get()
-                        ->keyBy($modelKey);
+            ->get()
+            ->keyBy($modelKey);
 
-        return Collection::make($results['hits']['hits'])->map(function($hit) use ($models) {
-            $id = $hit['_id'];
+        return Collection::make($results['hits']['hits'])
+            ->map(function ($hit) use ($models) {
+                $id = $hit['_id'];
 
-            if (isset($models[$id])) {
-                return $models[$id];
-            }
-        })->filter();
-    }
+                if (isset($models[$id])) {
+                    return $models[$id];
+                }
 
-    public function getTotalCount($results)
-    {
-        return $results['hits']['total'];
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getQuery()
-    {
-        return $this->query;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getResult()
-    {
-        return $this->result;
+                return [];
+            })->filter();
     }
 }

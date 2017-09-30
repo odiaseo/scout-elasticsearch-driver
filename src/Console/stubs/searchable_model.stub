@@ -2,7 +2,7 @@
 
 namespace DummyNamespace;
 
-use ScoutElastic\Searchable;
+use SynergyScoutElastic\Searchable;
 use Illuminate\Database\Eloquent\Model;
 
 class DummyClass extends Model
