@@ -1,7 +1,5 @@
 # Scout Elasticsearch Driver
 
-[![GitHub release](https://img.shields.io/github/release/qubyte/rubidium.svg)](https://github.com/odiaseo/scout-elasticsearch-driver)
-[![Packagist](https://img.shields.io/packagist/dm/doctrine/orm.svg)](https://packagist.org/packages/synergy/scout-elasticsearch-driver)
 [![Build Status](https://travis-ci.org/odiaseo/scout-elasticsearch-driver.svg?branch=master)](https://travis-ci.org/odiaseo/scout-elasticsearch-driver)
 [![Coverage Status](https://coveralls.io/repos/github/odiaseo/scout-elasticsearch-driver/badge.svg?branch=master)](https://coveralls.io/github/odiaseo/scout-elasticsearch-driver?branch=master)
 

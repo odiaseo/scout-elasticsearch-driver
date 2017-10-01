@@ -16,6 +16,8 @@ class ModelStub extends Model implements SearchableInterface
 
     protected $indexConfigurator = IndexConfiguratorStub::class;
 
+    protected $searchStrategies = [];
+
     protected $mapping = [
         'properties' => [
             'id'         => [

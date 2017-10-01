@@ -9,6 +9,9 @@ use SynergyScoutElastic\Models\SearchableInterface;
 
 trait RequiresModelArgument
 {
+    /**
+     * @return Model | SearchableInterface
+     */
     protected function getModel()
     {
         $modelClass = trim($this->argument('model'));

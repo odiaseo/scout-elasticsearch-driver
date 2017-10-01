@@ -2,8 +2,8 @@
 
 namespace SynergyScoutElastic\Payloads;
 
-use Exception;
 use Illuminate\Database\Eloquent\Model;
+use SynergyScoutElastic\Exception\InvalidModelException;
 
 class DocumentPayload extends TypePayload
 {
@@ -16,10 +16,7 @@ class DocumentPayload extends TypePayload
     public function __construct(Model $model)
     {
         if (!$model->getKey()) {
-            throw new Exception(sprintf(
-                'The key value must be set to construct a payload for the %s instance.',
-                get_class($model)
-            ));
+            throw new InvalidModelException($this->getInvalidModelMessage(), 431);
         }
 
         parent::__construct($model);

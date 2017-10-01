@@ -6,6 +6,9 @@ use Elasticsearch\Namespaces\IndicesNamespace;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use SynergyScoutElastic\Client\ClientInterface;
+use SynergyScoutElastic\Console\IndexConfiguratorMakeCommand;
+use SynergyScoutElastic\Console\SearchableModelMakeCommand;
+use SynergyScoutElastic\Console\SearchStrategyMakeCommand;
 use SynergyScoutElastic\Stubs\ElasticIndexCreateCommandStub;
 use SynergyScoutElastic\Stubs\ElasticIndexDropCommandStub;
 use SynergyScoutElastic\Stubs\ElasticIndexUpdateCommandStub;
@@ -174,5 +177,25 @@ class ConsoleCommandsTest extends TestCase
 
         $this->addToAssertionCount(1);
 
+    }
+
+    /**
+     * @param $className
+     * @dataProvider commandNameProvider
+     */
+    public function testStubFileExists($className)
+    {
+        $command = app()->make($className);
+        $this->assertInstanceOf($className, $command);
+        $this->assertFileExists($command->getStub());
+    }
+
+    public function commandNameProvider()
+    {
+        return [
+            [IndexConfiguratorMakeCommand::class],
+            [SearchStrategyMakeCommand::class],
+            [SearchableModelMakeCommand::class],
+        ];
     }
 }

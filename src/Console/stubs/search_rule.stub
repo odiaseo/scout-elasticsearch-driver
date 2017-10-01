@@ -2,12 +2,12 @@
 
 namespace DummyNamespace;
 
-use SynergyScoutElastic\SearchRule;
+use SynergyScoutElastic\Strategies\BaseSearchStrategy;
 
-class DummyClass extends SearchRule
+class DummyClass extends BaseSearchStrategy
 {
-    public function buildQueryPayload()
+    public function buildQueryPayload(): array
     {
-        //
+        return [];
     }
 }

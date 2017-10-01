@@ -4,9 +4,9 @@ namespace SynergyScoutElastic\Console;
 
 use Illuminate\Console\GeneratorCommand;
 
-class SearchRuleMakeCommand extends GeneratorCommand
+class SearchStrategyMakeCommand extends GeneratorCommand
 {
-    protected $name = 'make:search-rule';
+    protected $name = 'make:search-strategy';
 
     protected $description = 'Create a new search rule';
 
