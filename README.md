@@ -1,5 +1,8 @@
-# Scout Elasticsearch Driver
+# Laravel Scout Elasticsearch Driver
 
+[![Latest Stable Version](https://poser.pugx.org/synergy/scout-elasticsearch-driver/v/stable)](https://packagist.org/packages/synergy/scout-elasticsearch-driver)
+[![Total Downloads](https://poser.pugx.org/synergy/scout-elasticsearch-driver/downloads)](https://packagist.org/packages/synergy/scout-elasticsearch-driver)
+[![composer.lock](https://poser.pugx.org/synergy/scout-elasticsearch-driver/composerlock)](https://packagist.org/packages/synergy/scout-elasticsearch-driver) 
 [![Build Status](https://travis-ci.org/odiaseo/scout-elasticsearch-driver.svg?branch=master)](https://travis-ci.org/odiaseo/scout-elasticsearch-driver)
 [![Coverage Status](https://coveralls.io/repos/github/odiaseo/scout-elasticsearch-driver/badge.svg?branch=master)](https://coveralls.io/github/odiaseo/scout-elasticsearch-driver?branch=master)
 
