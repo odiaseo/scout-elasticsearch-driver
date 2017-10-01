@@ -2,18 +2,21 @@
 
 namespace SynergyScoutElastic\Models;
 
-use Laravel\Scout\Searchable as ScoutSearchable;
-use SynergyScoutElastic\Builders\FilterBuilder;
-use SynergyScoutElastic\Builders\SearchBuilder;
 use Exception;
+use Laravel\Scout\Searchable as ScoutSearchable;
+use SynergyScoutElastic\Builders\SearchBuilder;
 use SynergyScoutElastic\IndexConfigurator;
-use SynergyScoutElastic\SearchRule;
+use SynergyScoutElastic\Strategies\FindAllStrategy;
 
-trait Searchable {
+trait Searchable
+{
     use ScoutSearchable {
         ScoutSearchable::bootSearchable as bootScoutSearchable;
     }
 
+    /**
+     * @var bool
+     */
     private static $isSearchableTraitBooted = false;
 
     public static function bootSearchable()
@@ -28,10 +31,34 @@ trait Searchable {
     }
 
     /**
+     * @param      $query
+     * @param null $callback
+     *
+     * @return SearchBuilder
+     */
+    public static function search($query, $callback = null)
+    {
+        return new SearchBuilder(new static, $query, $callback);
+    }
+
+    /**
+     * @param $query
+     *
+     * @return mixed
+     */
+    public static function searchRaw($query)
+    {
+        $model = new static();
+
+        return $model->searchableUsing()
+            ->searchRaw($model, $query);
+    }
+
+    /**
      * @return IndexConfigurator
      * @throws Exception If an index configurator is not specified
      */
-    public function getIndexConfigurator()
+    public function getIndexConfigurator(): IndexConfigurator
     {
         static $indexConfigurator;
 
@@ -47,30 +74,19 @@ trait Searchable {
         return $indexConfigurator;
     }
 
-    public function getMapping()
+    /**
+     * @return array
+     */
+    public function getMapping(): array
     {
         return isset($this->mapping) ? $this->mapping : [];
     }
 
-    public function getSearchRules()
+    /**
+     * @return array
+     */
+    public function getSearchStrategies(): array
     {
-        return isset($this->searchRules) && count($this->searchRules) > 0 ? $this->searchRules : [SearchRule::class];
-    }
-
-    public static function search($query, $callback = null)
-    {
-        if ($query == '*') {
-            return new FilterBuilder(new static, $callback);
-        } else {
-            return new SearchBuilder(new static, $query, $callback);
-        }
-    }
-
-    public static function searchRaw($query)
-    {
-        $model = new static();
-
-        return $model->searchableUsing()
-            ->searchRaw($model, $query);
+        return !empty($this->searchStrategies) ? $this->searchStrategies : [FindAllStrategy::class];
     }
 }

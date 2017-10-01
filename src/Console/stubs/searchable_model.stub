@@ -12,8 +12,8 @@ class DummyClass extends Model implements SearchableInterface
 
     protected $indexConfigurator = DummyIndexConfigurator;
 
-    protected $searchRules = [
-        DummySearchRule
+    protected $searchStrategies = [
+        DummySearchStrategy
     ];
 
     protected $mapping = [

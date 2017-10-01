@@ -5,23 +5,22 @@ namespace SynergyScoutElastic\DataCollector;
 use DebugBar\DataCollector\DataCollector;
 use DebugBar\DataCollector\DataCollectorInterface;
 use DebugBar\DataCollector\Renderable;
-use Laravel\Scout\EngineManager;
-use SynergyScoutElastic\ElasticEngine;
+use SynergyScoutElastic\Client\ClientInterface;
 
 class ElasticsearchDataCollector extends DataCollector implements DataCollectorInterface, Renderable
 {
     /**
-     * @var ElasticEngine
+     * @var ClientInterface
      */
-    private $elasticEngine;
+    private $elasticClient;
 
     /**
      * ElasticsearchDataCollector constructor.
-     * @param EngineManager $elasticEngine
+     * @param ClientInterface $client
      */
-    public function __construct(EngineManager $elasticEngine)
+    public function __construct(ClientInterface $client)
     {
-        $this->elasticEngine = $elasticEngine;
+        $this->elasticClient = $client;
     }
 
     /**
@@ -38,13 +37,10 @@ class ElasticsearchDataCollector extends DataCollector implements DataCollectorI
     public function collect()
     {
 
-        $result = $this->elasticEngine->getResult();
-        $query  = $this->elasticEngine->getQuery();
+        $result = $this->elasticClient->getSearchQueries();
 
         return array_filter([
-            'query'      => json_encode($query),
-            'total hits' => array_get($result, 'hits.total'),
-            'time took'  => array_get($result, 'took'),
+            'query'      => json_encode($result),
         ]);
     }
 

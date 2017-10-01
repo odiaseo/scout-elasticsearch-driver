@@ -2,36 +2,55 @@
 
 namespace SynergyScoutElastic;
 
-use Illuminate\Config\Repository;
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Laravel\Scout\Builder;
 use Laravel\Scout\Engines\Engine;
-use stdClass;
 use SynergyScoutElastic\Builders\SearchBuilder;
 use SynergyScoutElastic\Client\ClientInterface;
 use SynergyScoutElastic\Models\SearchableInterface;
 use SynergyScoutElastic\Payloads\DocumentPayload;
-use SynergyScoutElastic\Payloads\TypePayload;
 
 class ElasticEngine extends Engine
 {
+    /**
+     * @var bool
+     */
     protected $updateMapping = false;
 
+    /**
+     * @var
+     */
     protected $query;
 
+    /**
+     * @var
+     */
     protected $result;
 
+    /**
+     * @var ClientInterface
+     */
     private $elasticClient;
 
+    /**
+     * @var Kernel
+     */
     private $kernel;
 
-    public function __construct(Kernel $kernel, ClientInterface $elasticClient, Repository $config)
+    /**
+     * ElasticEngine constructor.
+     *
+     * @param Kernel          $kernel
+     * @param ClientInterface $elasticClient
+     * @param bool            $updateMapping
+     */
+    public function __construct(Kernel $kernel, ClientInterface $elasticClient, bool $updateMapping)
     {
         $this->elasticClient = $elasticClient;
-        $this->kernel        = $kernel;
-        $this->updateMapping = $config->get('scout_elastic.update_mapping');
+        $this->kernel = $kernel;
+        $this->updateMapping = $updateMapping;
     }
 
     /**
@@ -51,7 +70,7 @@ class ElasticEngine extends Engine
             $array = $model->toSearchableArray();
 
             if (empty($array)) {
-                return true;
+                return false;
             }
 
             $payload = (new DocumentPayload($model))
@@ -59,29 +78,47 @@ class ElasticEngine extends Engine
                 ->get();
 
             $this->elasticClient->index($payload);
+
+            return true;
         });
 
         $this->updateMapping = false;
     }
 
+    /**
+     * @param Collection $models
+     */
     public function delete($models)
     {
         $models->each(function ($model) {
-            $payload = (new DocumentPayload($model))
-                ->get();
+            $payload = (new DocumentPayload($model))->get();
 
             $this->elasticClient->delete($payload);
         });
     }
 
+    /**
+     * @param Builder $builder
+     *
+     * @return mixed
+     */
     public function search(Builder $builder)
     {
-        return $this->performSearch($builder);
+        $res = $this->performSearch($builder);
+
+        return $res;
     }
 
+    /**
+     * @param Builder $builder
+     * @param array   $options
+     *
+     * @return mixed
+     */
     protected function performSearch(Builder $builder, array $options = [])
     {
 
+        /** @var $builder SearchBuilder */
         if ($builder->callback) {
             $this->query = $builder->query;
 
@@ -93,134 +130,42 @@ class ElasticEngine extends Engine
             );
         }
 
-        $result = null;
-
-        $this->buildSearchQueryPayloadCollection($builder, $options)->each(function ($payload) use (&$result) {
-            $result = $this->elasticClient->search($payload);
-
-            $this->query  = array_get($payload, 'body.query');
-            $this->result = $result;
-
-            if ($this->getTotalCount($result) > 0) {
-                return false;
-            }
-        });
-
-        $this->result = $result;
-
-        return $result;
+        return $this->elasticClient->search($builder, $options);
     }
 
-    public function buildSearchQueryPayloadCollection(Builder $builder, array $options = [])
+    /**
+     * @param bool $options
+     *
+     * @return $this
+     */
+    public function explain(bool $options = true)
     {
-        $payloadCollection = collect();
+        $this->elasticClient->debug($options);
 
-        if ($builder instanceof SearchBuilder) {
-            $searchRules = $builder->rules ?: $builder->model->getSearchRules();
-
-            foreach ($searchRules as $rule) {
-                if (is_callable($rule)) {
-                    $queryPayload = call_user_func($rule, $builder);
-                } else {
-                    /** @var SearchRule $ruleEntity */
-                    $ruleEntity = new $rule($builder);
-
-                    if ($ruleEntity->isApplicable()) {
-                        $queryPayload = $ruleEntity->buildQueryPayload();
-                    } else {
-                        continue;
-                    }
-                }
-
-                $payload = $this->buildSearchQueryPayload(
-                    $builder,
-                    $queryPayload,
-                    $options
-                );
-
-                $payloadCollection->push($payload);
-            }
-        } else {
-            $payload = $this->buildSearchQueryPayload(
-                $builder,
-                ['must' => ['match_all' => new stdClass()]],
-                $options
-            );
-
-            $payloadCollection->push($payload);
-        }
-
-        return $payloadCollection;
+        return $this;
     }
 
-    protected function buildSearchQueryPayload(Builder $builder, $queryPayload, array $options = [])
+    /**
+     * @param bool $options
+     *
+     * @return $this
+     */
+    public function profile(bool $options = true)
     {
-        foreach ($builder->wheres as $clause => $filters) {
-            if (count($filters) == 0) {
-                continue;
-            }
+        $this->elasticClient->profile($options);
 
-            if (!array_has($queryPayload, 'filter.bool.' . $clause)) {
-                array_set($queryPayload, 'filter.bool.' . $clause, []);
-            }
-
-            $queryPayload['filter']['bool'][$clause] = array_merge(
-                $queryPayload['filter']['bool'][$clause],
-                $filters
-            );
-        }
-
-        $payload = (new TypePayload($builder->model))
-            ->setIfNotEmpty('body.query.bool', $queryPayload)
-            ->setIfNotEmpty('body.sort', $builder->orders)
-            ->setIfNotEmpty('body.explain', $options['explain'] ?? null)
-            ->setIfNotEmpty('body.profile', $options['profile'] ?? null);
-
-        if ($size = isset($options['limit']) ? $options['limit'] : $builder->limit) {
-            $payload->set('body.size', $size);
-
-            if (isset($options['page'])) {
-                $payload->set('body.from', ($options['page'] - 1) * $size);
-            }
-        }
-
-        return $payload->get();
+        return $this;
     }
 
-    public function getTotalCount($results)
-    {
-        return $results['hits']['total'];
-    }
-
-    public function paginate(Builder $builder, $perPage, $page)
-    {
-        return $this->performSearch($builder, [
-            'limit' => $perPage,
-            'page'  => $page
-        ]);
-    }
-
-    public function explain(Builder $builder)
-    {
-        return $this->performSearch($builder, [
-            'explain' => true
-        ]);
-    }
-
-    public function profile(Builder $builder)
-    {
-        return $this->performSearch($builder, [
-            'profile' => true
-        ]);
-    }
-
+    /**
+     * @param Model $model
+     * @param       $query
+     *
+     * @return mixed
+     */
     public function searchRaw(Model $model, $query)
     {
-        $payload = (new TypePayload($model))
-            ->setIfNotEmpty('body', $query)
-            ->get();
-
-        return $this->elasticClient->search($payload);
+        return $this->elasticClient->searchRaw($model, $query);
     }
 
     /**
@@ -239,11 +184,27 @@ class ElasticEngine extends Engine
         return $this->result;
     }
 
-    public function mapIds($results)
+    /**
+     * @param Builder $builder
+     * @param int     $perPage
+     * @param int     $page
+     *
+     * @return mixed
+     */
+    public function paginate(Builder $builder, $perPage, $page)
     {
-        return array_pluck($results['hits']['hits'], '_id');
+        return $this->performSearch($builder, [
+            'limit' => $perPage,
+            'page'  => $page
+        ]);
     }
 
+    /**
+     * @param mixed $results
+     * @param Model $model
+     *
+     * @return Collection
+     */
     public function map($results, $model)
     {
         if ($this->getTotalCount($results) == 0) {
@@ -251,9 +212,7 @@ class ElasticEngine extends Engine
         }
 
         $ids = $this->mapIds($results);
-
         $modelKey = $model->getKeyName();
-
         $models = $model->whereIn($modelKey, $ids)
             ->get()
             ->keyBy($modelKey);
@@ -263,10 +222,42 @@ class ElasticEngine extends Engine
                 $id = $hit['_id'];
 
                 if (isset($models[$id])) {
-                    return $models[$id];
+                    return $this->appendDebugInfo($models[$id], $hit);
                 }
 
                 return [];
             })->filter();
+    }
+
+    /**
+     * @param mixed $results
+     *
+     * @return int
+     */
+    public function getTotalCount($results)
+    {
+        return (int)$results['hits']['total'];
+    }
+
+    /**
+     * @param mixed $results
+     *
+     * @return array
+     */
+    public function mapIds($results)
+    {
+        return array_pluck($results['hits']['hits'], '_id');
+    }
+
+    private function appendDebugInfo(Model $model, array $hit)
+    {
+        $debug = array_get($hit, '_explanation', []);
+
+        if ($debug) {
+            $model->makeVisible('debug');
+            $model->debug = $debug;
+        }
+
+        return $model;
     }
 }

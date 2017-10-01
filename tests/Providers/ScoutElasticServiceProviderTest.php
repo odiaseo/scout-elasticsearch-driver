@@ -2,7 +2,7 @@
 
 namespace SynergyScoutElastic\Providers;
 
-use SynergyScoutElastic\Client\ScoutElasticClient;
+use SynergyScoutElastic\Client\ClientInterface;
 use SynergyScoutElastic\TestCase;
 
 class ScoutElasticServiceProviderTest extends TestCase
@@ -11,6 +11,6 @@ class ScoutElasticServiceProviderTest extends TestCase
     {
         $provider = new ScoutElasticServiceProvider(app());
         $provider->register();
-        $this->assertContains(ScoutElasticClient::class, $provider->provides());
+        $this->assertContains(ClientInterface::class, $provider->provides());
     }
 }

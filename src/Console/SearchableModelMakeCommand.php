@@ -23,8 +23,8 @@ class SearchableModelMakeCommand extends ModelMakeCommand
         $options[] = ['index-configurator', 'i', InputOption::VALUE_REQUIRED,
             'Specify the index configurator for the model. It\'ll be created if doesn\'t exist.'];
 
-        $options[] = ['search-rule', 's', InputOption::VALUE_REQUIRED,
-            'Specify the search rule for the model. It\'ll be created if doesn\'t exist.'];
+        $options[] = ['strategy', 's', InputOption::VALUE_REQUIRED,
+            'Specify the search strategy for the model. It\'ll be created if doesn\'t exist.'];
 
         return $options;
     }
@@ -34,9 +34,9 @@ class SearchableModelMakeCommand extends ModelMakeCommand
         return trim($this->option('index-configurator'));
     }
 
-    protected function getSearchRule()
+    protected function getStrategy()
     {
-        return trim($this->option('search-rule'));
+        return trim($this->option('strategy'));
     }
 
     protected function buildClass($name)
@@ -46,8 +46,8 @@ class SearchableModelMakeCommand extends ModelMakeCommand
         $indexConfigurator = $this->getIndexConfigurator();
         $stub = str_replace('DummyIndexConfigurator', $indexConfigurator ? "{$indexConfigurator}::class" : 'null', $stub);
 
-        $searchRule = $this->getSearchRule();
-        $stub = str_replace('DummySearchRule', $searchRule ? "{$searchRule}::class" : '//', $stub);
+        $strategy = $this->getStrategy();
+        $stub = str_replace('DummySearchStrategy', $strategy ? "{$strategy}::class" : '//', $stub);
 
         return $stub;
     }
@@ -63,10 +63,10 @@ class SearchableModelMakeCommand extends ModelMakeCommand
         }
 
 
-        $searchRule = $this->getSearchRule();
+        $searchRule = $this->getStrategy();
 
         if ($searchRule && !$this->alreadyExists($searchRule)) {
-            $this->call('make:search-rule', [
+            $this->call('make:search-strategy', [
                 'name' => $searchRule
             ]);
         }

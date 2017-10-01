@@ -2,21 +2,36 @@
 
 namespace SynergyScoutElastic\Models;
 
+use SynergyScoutElastic\IndexConfigurator;
+
 interface SearchableInterface
 {
     public static function bootSearchable();
-
-    public function getIndexConfigurator();
-
-    public function getMapping();
-
-    public function getSearchRules();
 
     public static function search($query, $callback = null);
 
     public static function searchRaw($query);
 
+    /**
+     * @return IndexConfigurator
+     */
+    public function getIndexConfigurator(): IndexConfigurator;
+
+    /**
+     * @return array
+     */
+    public function getMapping(): array;
+
+    /**
+     * @return array
+     */
+    public function getSearchStrategies(): array;
+
+    /**
+     * @return array
+     */
+    public function toSearchableArray();
+
     public function searchableAs();
 
-    public function toSearchableArray();
 }

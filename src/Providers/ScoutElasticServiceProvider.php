@@ -3,6 +3,7 @@
 namespace SynergyScoutElastic\Providers;
 
 use Elasticsearch\ClientBuilder;
+use Illuminate\Foundation\Console\Kernel;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Scout\EngineManager;
 use SynergyScoutElastic\Client\ClientInterface;
@@ -13,14 +14,18 @@ use SynergyScoutElastic\Console\ElasticIndexUpdateCommand;
 use SynergyScoutElastic\Console\ElasticUpdateMappingCommand;
 use SynergyScoutElastic\Console\IndexConfiguratorMakeCommand;
 use SynergyScoutElastic\Console\SearchableModelMakeCommand;
-use SynergyScoutElastic\Console\SearchRuleMakeCommand;
+use SynergyScoutElastic\Console\SearchStrategyMakeCommand;
 use SynergyScoutElastic\DataCollector\ElasticsearchDataCollector;
 use SynergyScoutElastic\ElasticEngine;
 
+/**
+ * Class ScoutElasticServiceProvider
+ * @package SynergyScoutElastic\Providers
+ */
 class ScoutElasticServiceProvider extends ServiceProvider
 {
 
-    protected $defer = true;
+    protected $defer = false;
 
     public function boot()
     {
@@ -32,7 +37,7 @@ class ScoutElasticServiceProvider extends ServiceProvider
             // make commands
             IndexConfiguratorMakeCommand::class,
             SearchableModelMakeCommand::class,
-            SearchRuleMakeCommand::class,
+            SearchStrategyMakeCommand::class,
 
             // elastic commands
             ElasticIndexCreateCommand::class,
@@ -55,12 +60,21 @@ class ScoutElasticServiceProvider extends ServiceProvider
             return new ScoutElasticClient(ClientBuilder::fromConfig($config));
         });
 
+        $this->app->singleton(ElasticEngine::class, function () {
+            $updateMapping = (bool)$this->app->make('config')->get('scout_elastic.update_mapping');
+
+            $kernel        = $this->app->make(Kernel::class);
+            $elasticClient = $this->app->make(ClientInterface::class);
+
+            return new ElasticEngine($kernel, $elasticClient, $updateMapping);
+        });
+
         $this->app->alias(ClientInterface::class, ScoutElasticClient::class);
-        $this->addCollector();
+        $this->addElasticDataCollector();
 
     }
 
-    private function addCollector()
+    private function addElasticDataCollector()
     {
         if ($this->app->has('debugbar')) {
             $debugbar = $this->app->make('debugbar');
@@ -71,7 +85,8 @@ class ScoutElasticServiceProvider extends ServiceProvider
     public function provides()
     {
         return [
-            ScoutElasticClient::class
+            ClientInterface::class,
+            ElasticEngine::class,
         ];
     }
 }
