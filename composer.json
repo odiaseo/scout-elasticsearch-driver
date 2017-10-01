@@ -24,7 +24,14 @@
     "php": ">=7.0",
     "elasticsearch/elasticsearch": "^5.3",
     "laravel/scout": "^3.0",
-    "laravel/framework": "^5.5"
+    "laravel/framework": "^5.5",
+    "doctrine/instantiator": "~1.0.3"
+  },
+  "require-dev": {
+    "barryvdh/laravel-debugbar": "*",
+    "phpunit/phpunit": "^6.2",
+    "mockery/mockery": "0.9.*",
+    "satooshi/php-coveralls": "^1.0"
   },
   "autoload": {
     "psr-4": {
@@ -45,11 +52,5 @@
         "ElasticClient": "SynergyScoutElastic\\Facades"
       }
     }
-  },
-  "require-dev": {
-    "barryvdh/laravel-debugbar": "^3.1",
-    "phpunit/phpunit": "^6.2",
-    "mockery/mockery": "^0.9.9",
-    "satooshi/php-coveralls": "^1.0"
   }
 }
