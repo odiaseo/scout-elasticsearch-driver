@@ -10,7 +10,7 @@
         var rendered = renderjson(obj);
         var container = $('<div id="json-data"/>').append(rendered);
 
-        $(this.$el).append(container);
+        $(this.$el).html('').append(container);
     };
 
     PhpDebugBar.Widgets.RenderJsonWidget = PhpDebugBar.Widget.extend({

@@ -70,7 +70,6 @@ class ElasticsearchDataCollector extends DataCollector implements DataCollectorI
         return [
             'base_path' => __DIR__.'/../Resources/',
             'css'       => [
-                'stylesheet.css',
                 'json-widget.css',
             ],
             'js'        => [

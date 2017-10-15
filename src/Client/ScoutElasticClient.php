@@ -120,7 +120,7 @@ class ScoutElasticClient implements ClientInterface
                 /** @var StrategyInterface $strategy */
                 $strategy = new $rule($builder);
                 $wrap = $strategy->shouldWrap();
-                $name = get_class($strategy).'-'.$index;
+                $name = get_class($strategy);
 
                 if ($strategy->isApplicable()) {
                     $queryPayload = $strategy->buildQueryPayload();
