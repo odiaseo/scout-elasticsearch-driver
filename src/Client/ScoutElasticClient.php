@@ -88,7 +88,7 @@ class ScoutElasticClient implements ClientInterface
      */
     public function buildSearchQueryPayloadCollection(SearchBuilder $builder, array $options = []): Collection
     {
-        $options     = array_merge($options, ['explain' => $this->explain, 'profile' => $this->profile]);
+        $options = array_merge($options, ['explain' => $this->explain, 'profile' => $this->profile]);
         $searchRules = $builder->getStrategies() ?: $builder->model->getSearchStrategies();
 
         if ($searchRules) {
@@ -101,9 +101,9 @@ class ScoutElasticClient implements ClientInterface
     }
 
     /**
-     * @param array $searchRules
+     * @param array         $searchRules
      * @param SearchBuilder $builder
-     * @param array $options
+     * @param array         $options
      *
      * @return \Illuminate\Support\Collection
      */
@@ -111,13 +111,16 @@ class ScoutElasticClient implements ClientInterface
     {
         $payloadCollection = collect();
 
-        foreach ($searchRules as $rule) {
+        foreach ($searchRules as $index => $rule) {
+            $wrap = true;
             if (is_callable($rule)) {
-                $queryPayload          = call_user_func($rule, $builder);
-                $this->searchQueries[] = $queryPayload;
+                $queryPayload = call_user_func($rule, $builder);
+                $name = 'callable-'.$index;
             } else {
                 /** @var StrategyInterface $strategy */
                 $strategy = new $rule($builder);
+                $wrap = $strategy->shouldWrap();
+                $name = get_class($strategy).'-'.$index;
 
                 if ($strategy->isApplicable()) {
                     $queryPayload = $strategy->buildQueryPayload();
@@ -126,8 +129,8 @@ class ScoutElasticClient implements ClientInterface
                 }
             }
 
-            $payload               = $this->buildSearchQueryPayload($builder, $queryPayload, $options);
-            $this->searchQueries[] = array_get($payload, 'body');
+            $payload = $this->buildSearchQueryPayload($builder, $queryPayload, $options, $wrap);
+            $this->searchQueries[$name] = array_get($payload, 'body');
 
             $payloadCollection->push($payload);
         }
@@ -138,19 +141,19 @@ class ScoutElasticClient implements ClientInterface
     /**
      * @param SearchBuilder $builder
      * @param               $queryPayload
-     * @param array $options
+     * @param array         $options
      *
      * @return mixed
      */
-    private function buildSearchQueryPayload(SearchBuilder $builder, $queryPayload, array $options = [])
+    private function buildSearchQueryPayload(SearchBuilder $builder, $queryPayload, array $options = [], $wrap = true)
     {
         foreach ($builder->wheres as $clause => $filters) {
             if (count($filters) == 0) {
                 continue;
             }
 
-            if (!array_has($queryPayload, 'filter.bool.' . $clause)) {
-                array_set($queryPayload, 'filter.bool.' . $clause, []);
+            if (!array_has($queryPayload, 'filter.bool.'.$clause)) {
+                array_set($queryPayload, 'filter.bool.'.$clause, []);
             }
 
             $queryPayload['filter']['bool'][$clause] = array_merge(
@@ -159,9 +162,15 @@ class ScoutElasticClient implements ClientInterface
             );
         }
 
-        $payload = (new TypePayload($builder->model))
-            ->setIfNotEmpty('body.query.bool', $queryPayload)
-            ->setIfNotEmpty('body.sort', $builder->orders)
+        $payload = (new TypePayload($builder->model));
+
+        if ($wrap) {
+            $payload->setIfNotEmpty('body.query.bool', $queryPayload);
+        } else {
+            $payload->setIfNotEmpty('body.query', $queryPayload);
+        }
+
+        $payload->setIfNotEmpty('body.sort', $builder->orders)
             ->setIfNotEmpty('body.explain', $options['explain'] ?? null)
             ->setIfNotEmpty('body.profile', $options['profile'] ?? null);
 
@@ -178,14 +187,14 @@ class ScoutElasticClient implements ClientInterface
 
     /**
      * @param SearchBuilder $builder
-     * @param array $options
+     * @param array         $options
      *
      * @return \Illuminate\Support\Collection
      */
     private function buildDefaultPayload(SearchBuilder $builder, array $options)
     {
         $payloadCollection = collect();
-        $payload           = $this->buildSearchQueryPayload(
+        $payload = $this->buildSearchQueryPayload(
             $builder,
             ['must' => ['match_all' => new stdClass()]],
             $options

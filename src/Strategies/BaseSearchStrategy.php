@@ -26,6 +26,13 @@ abstract class BaseSearchStrategy implements StrategyInterface
     {
         return true;
     }
+    /**
+     * @return bool
+     */
+    public function shouldWrap(): bool
+    {
+        return true;
+    }
 
     /**
      * @return SearchBuilder
