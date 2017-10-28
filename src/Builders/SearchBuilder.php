@@ -25,6 +25,18 @@ class SearchBuilder extends Builder
     private $strategies = [];
 
     /**
+     * @param mixed $fields
+     *
+     * @return $this
+     */
+    public function select($fields)
+    {
+        $this->engine()->setFields($fields);
+
+        return $this;
+    }
+
+    /**
      * Supported operators are =, &gt;, &lt;, &gt;=, &lt;=, &lt;&gt;
      *
      * @param string $field Field name
@@ -197,14 +209,6 @@ class SearchBuilder extends Builder
         $this->engine()->profile($option);
 
         return $this;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function buildPayload()
-    {
-        return $this->engine()->buildSearchQueryPayloadCollection($this);
     }
 
     /**

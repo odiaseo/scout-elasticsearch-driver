@@ -5,7 +5,7 @@
         var obj = JSON.parse(data);
 
         renderjson.set_icons('+', '-')
-            .set_show_to_level(2);
+            .set_show_to_level('all');
 
         var rendered = renderjson(obj);
         var container = $('<div id="json-data"/>').append(rendered);

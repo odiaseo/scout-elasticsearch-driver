@@ -167,7 +167,7 @@ class ScoutElasticClient implements ClientInterface
         if ($wrap) {
             $payload->setIfNotEmpty('body.query.bool', $queryPayload);
         } else {
-            $payload->setIfNotEmpty('body.query', $queryPayload);
+            $payload->setIfNotEmpty('body', $queryPayload);
         }
 
         $payload->setIfNotEmpty('body.sort', $builder->orders)

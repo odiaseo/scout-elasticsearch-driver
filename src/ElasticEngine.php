@@ -35,6 +35,11 @@ class ElasticEngine extends Engine
     private $kernel;
 
     /**
+     * @var mixed
+     */
+    private $fields ;
+
+    /**
      * ElasticEngine constructor.
      *
      * @param Kernel $kernel
@@ -156,6 +161,11 @@ class ElasticEngine extends Engine
 
         $ids      = $this->mapIds($results);
         $modelKey = $model->getKeyName();
+
+        if($this->fields){
+            $model = $model->select($this->fields);
+        }
+
         $models   = $model->whereIn($modelKey, $ids)
             ->get()
             ->keyBy($modelKey);
@@ -242,5 +252,17 @@ class ElasticEngine extends Engine
     public function searchRaw(Model $model, $query)
     {
         return $this->elasticClient->searchRaw($model, $query);
+    }
+
+    /**
+     * @param mixed $fields
+     *
+     * @return $this
+     */
+    public function setFields($fields)
+    {
+        $this->fields = $fields;
+
+        return $this;
     }
 }

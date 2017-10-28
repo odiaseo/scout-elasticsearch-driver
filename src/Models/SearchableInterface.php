@@ -32,6 +32,9 @@ interface SearchableInterface
      */
     public function toSearchableArray();
 
+    /**
+     * @return string
+     */
     public function searchableAs();
 
 }
