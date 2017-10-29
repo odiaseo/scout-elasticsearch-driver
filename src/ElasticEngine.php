@@ -47,6 +47,16 @@ class ElasticEngine extends Engine
     private $rawResult = false;
 
     /**
+     * @var int
+     */
+    private $page = 0;
+
+    /**
+     * @var int
+     */
+    private $limit = 10;
+
+    /**
      * ElasticEngine constructor.
      *
      * @param Kernel          $kernel
@@ -111,7 +121,10 @@ class ElasticEngine extends Engine
      */
     public function search(Builder $builder)
     {
-        $res = $this->performSearch($builder);
+        $options['limit'] = $this->limit;
+        $options['page'] = $this->page;
+
+        $res = $this->performSearch($builder, $options);
 
         return $res;
     }
@@ -170,12 +183,11 @@ class ElasticEngine extends Engine
             $useAll = empty($this->fields);
 
             return Collection::make($results['hits']['hits'])->map(function ($hit) use ($useAll) {
-                $flipped = array_flip($this->fields);
+                if ($useAll) {
+                    return $hit['_source'];
+                }
 
-                return array_filter($hit['_source'], function ($key) use ($useAll, $flipped) {
-                    return $useAll || array_has($flipped, $key);
-
-                }, ARRAY_FILTER_USE_KEY);
+                return $this->pluckFields($hit['_source'], $this->fields);
             });
         }
 
@@ -214,6 +226,24 @@ class ElasticEngine extends Engine
     public function getTotalCount($results)
     {
         return (int)$results['hits']['total'];
+    }
+
+    /**
+     * @param array $values
+     * @param array $fields
+     *
+     * @return array
+     */
+    private function pluckFields(array $values, array $fields)
+    {
+        $array = [];
+        $res = array_only(array_dot($values), $fields);
+
+        foreach ($res as $key => $value) {
+            array_set($array, $key, $value);
+        }
+
+        return $array;
     }
 
     /**
@@ -302,4 +332,29 @@ class ElasticEngine extends Engine
 
         return $this;
     }
+
+    /**
+     * @param int $page
+     *
+     * @return $this
+     */
+    public function setPage(int $page)
+    {
+        $this->page = $page;
+
+        return $this;
+    }
+
+    /**
+     * @param int $limit
+     *
+     * @return $this
+     */
+    public function setLimit(int $limit)
+    {
+        $this->limit = $limit;
+
+        return $this;
+    }
+
 }

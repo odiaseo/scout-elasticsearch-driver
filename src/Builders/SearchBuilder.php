@@ -291,4 +291,28 @@ class SearchBuilder extends Builder
     {
         return $this->strategies;
     }
+
+    /**
+     * @param int $limit
+     *
+     * @return $this
+     */
+    public function take($limit)
+    {
+        $this->engine()->setLimit((int)$limit);
+
+        return $this;
+    }
+
+    /**
+     * @param int $offset
+     *
+     * @return $this
+     */
+    public function page($offset)
+    {
+        $this->engine()->setPage((int)$offset);
+
+        return $this;
+    }
 }
