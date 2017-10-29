@@ -16,6 +16,7 @@ class SearchBuilder extends Builder
 {
     public $wheres = [
         'must'     => [],
+        'should'   => [],
         'must_not' => []
     ];
 
@@ -25,6 +26,19 @@ class SearchBuilder extends Builder
     private $strategies = [];
 
     /**
+     * @var array
+     */
+    private $compare = [
+        '!=',
+        '<>',
+        '>=',
+        '<=',
+        '>',
+        '<',
+        '=',
+    ];
+
+    /**
      * @param mixed $fields
      *
      * @return $this
@@ -32,6 +46,13 @@ class SearchBuilder extends Builder
     public function select($fields)
     {
         $this->engine()->setFields($fields);
+
+        return $this;
+    }
+
+    public function rawResult(bool $value)
+    {
+        $this->engine()->setRawResult($value);
 
         return $this;
     }
@@ -46,40 +67,80 @@ class SearchBuilder extends Builder
      */
     public function where($field, $value)
     {
+        $this->addClause($field, $value);
+
+        return $this;
+    }
+
+    /**
+     * @param string $field
+     * @param mixed  $value
+     * @param string $boolOperator
+     *
+     * @return $this
+     */
+    private function addClause(string $field, $value, $boolOperator = 'must')
+    {
         $args = func_get_args();
 
         if (count($args) == 3) {
             list($field, $operator, $value) = $args;
         } else {
             $operator = '=';
+            foreach ($this->compare as $op) {
+                if (ends_with($value, $op)) {
+                    $operator = $op;
+                    break;
+                }
+            }
+        }
+
+        if (starts_with($field, '-')) {
+            $boolOperator = 'should';
+        }
+
+        $field = trim($field, '-+');
+        if (is_string($value)) {
+            $value = str_replace($this->compare, '', $value);
+        }
+
+        if (is_numeric($value)) {
+            $value = $value * 1;
         }
 
         switch ($operator) {
             case '=':
-                $this->wheres['must'][] = ['term' => [$field => $value]];
+                $this->wheres[$boolOperator][] = ['term' => [$field => $value]];
                 break;
 
             case '>':
-                $this->wheres['must'][] = ['range' => [$field => ['gt' => $value]]];
+                $this->wheres[$boolOperator][] = ['range' => [$field => ['gt' => $value]]];
                 break;
 
             case '<';
-                $this->wheres['must'][] = ['range' => [$field => ['lt' => $value]]];
+                $this->wheres[$boolOperator][] = ['range' => [$field => ['lt' => $value]]];
                 break;
 
             case '>=':
-                $this->wheres['must'][] = ['range' => [$field => ['gte' => $value]]];
+                $this->wheres[$boolOperator][] = ['range' => [$field => ['gte' => $value]]];
                 break;
 
             case '<=':
-                $this->wheres['must'][] = ['range' => [$field => ['lte' => $value]]];
+                $this->wheres[$boolOperator][] = ['range' => [$field => ['lte' => $value]]];
                 break;
 
             case '!=':
             case '<>':
-                $this->wheres['must_not'][] = ['term' => [$field => $value]];
+                $this->wheres[$boolOperator][] = ['term' => [$field => $value]];
                 break;
         }
+
+        return $this;
+    }
+
+    public function orWhere($field, $value)
+    {
+        $this->addClause($field, $value, 'should');
 
         return $this;
     }

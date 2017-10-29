@@ -37,19 +37,26 @@ class ElasticEngine extends Engine
     /**
      * @var mixed
      */
-    private $fields ;
+    private $fields;
+
+    /**
+     * Return result from elastic search
+     *
+     * @var bool
+     */
+    private $rawResult = false;
 
     /**
      * ElasticEngine constructor.
      *
-     * @param Kernel $kernel
+     * @param Kernel          $kernel
      * @param ClientInterface $elasticClient
-     * @param bool $updateMapping
+     * @param bool            $updateMapping
      */
     public function __construct(Kernel $kernel, ClientInterface $elasticClient, bool $updateMapping)
     {
         $this->elasticClient = $elasticClient;
-        $this->kernel        = $kernel;
+        $this->kernel = $kernel;
         $this->updateMapping = $updateMapping;
     }
 
@@ -111,7 +118,7 @@ class ElasticEngine extends Engine
 
     /**
      * @param Builder $builder
-     * @param array $options
+     * @param array   $options
      *
      * @return mixed
      */
@@ -134,8 +141,8 @@ class ElasticEngine extends Engine
 
     /**
      * @param Builder $builder
-     * @param int $perPage
-     * @param int $page
+     * @param int     $perPage
+     * @param int     $page
      *
      * @return mixed
      */
@@ -156,17 +163,34 @@ class ElasticEngine extends Engine
     public function map($results, $model)
     {
         if ($this->getTotalCount($results) === 0) {
-            return Collection::make();
+            return Collection::make([]);
         }
 
-        $ids      = $this->mapIds($results);
+        if ($this->rawResult) {
+            $useAll = empty($this->fields);
+
+            return Collection::make($results['hits']['hits'])->map(function ($hit) use ($useAll) {
+                $flipped = array_flip($this->fields);
+
+                return array_filter($hit['_source'], function ($key) use ($useAll, $flipped) {
+                    return $useAll || array_has($flipped, $key);
+
+                }, ARRAY_FILTER_USE_KEY);
+            });
+        }
+
+        $ids = $this->mapIds($results);
         $modelKey = $model->getKeyName();
 
-        if($this->fields){
-            $model = $model->select($this->fields);
+        if ($this->fields) {
+            $fields = $this->fields;
+            $fields[] = $modelKey;
+            $fields = array_unique($fields);
+
+            $model = $model->select($fields);
         }
 
-        $models   = $model->whereIn($modelKey, $ids)
+        $models = $model->whereIn($modelKey, $ids)
             ->get()
             ->keyBy($modelKey);
 
@@ -205,6 +229,7 @@ class ElasticEngine extends Engine
     /**
      * @param Model $model
      * @param array $hit
+     *
      * @return Model
      */
     private function appendDebugInfo(Model $model, array $hit)
@@ -262,6 +287,18 @@ class ElasticEngine extends Engine
     public function setFields($fields)
     {
         $this->fields = $fields;
+
+        return $this;
+    }
+
+    /**
+     * @param bool $rawResult
+     *
+     * @return $this
+     */
+    public function setRawResult(bool $rawResult)
+    {
+        $this->rawResult = $rawResult;
 
         return $this;
     }
