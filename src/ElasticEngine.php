@@ -194,7 +194,7 @@ class ElasticEngine extends Engine
         $ids = $this->mapIds($results);
         $modelKey = $model->getKeyName();
 
-        if ($this->fields) {
+        if (is_array($this->fields)) {
             $fields = $this->fields;
             $fields[] = $modelKey;
             $fields = array_unique($fields);
