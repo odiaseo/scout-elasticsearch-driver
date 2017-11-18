@@ -23,7 +23,7 @@ class ElasticsearchDataCollectorTest extends TestCase
 
     public function testCollectorName()
     {
-        $this->assertSame('elastic-search', $this->collector->getName());
+        $this->assertSame('Elastic Search', $this->collector->getName());
     }
 
     public function testCollectedDataContainsRequiredKeys()

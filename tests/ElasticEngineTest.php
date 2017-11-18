@@ -5,11 +5,13 @@ namespace SynergyScoutElastic;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Foundation\Console\Kernel;
 use Mockery;
+use Prophecy\Argument;
 use stdClass;
 use SynergyScoutElastic\Builders\SearchBuilder;
 use SynergyScoutElastic\Client\ClientInterface;
 use SynergyScoutElastic\Facades\ElasticClient;
 use SynergyScoutElastic\Stubs\ModelStub;
+use SynergyScoutElastic\Stubs\SearchBuilderStub;
 
 class ElasticEngineTest extends TestCase
 {
@@ -50,7 +52,7 @@ class ElasticEngineTest extends TestCase
         $kernel = $this->prophesize(Kernel::class);
 
         if ($method == 'search') {
-            $client->$method($builder, $options)->shouldbeCalled();
+            $client->$method(Argument::cetera())->shouldbeCalled();
             $client->buildSearchQueryPayloadCollection($builder, $options)->willReturn($params);
         } elseif ($method) {
             $client->$method($params)->shouldbeCalled();
@@ -118,7 +120,7 @@ class ElasticEngineTest extends TestCase
             ]
         ];
 
-        $builder = (new SearchBuilder($this->mockModel(), 'test query'))->take(10);
+        $builder = (new SearchBuilderStub($this->mockModel(), 'test query'))->take(10);
         $engine  = $this->getEngine('search', $params, $builder);
         $engine->search($builder);
 
@@ -146,7 +148,7 @@ class ElasticEngineTest extends TestCase
             ]
         ];
 
-        $builder = (new SearchBuilder($this->mockModel(), 'test query'))
+        $builder = (new SearchBuilderStub($this->mockModel(), 'test query'))
             ->orderBy('name', 'asc');
         $engine  = $this->getEngine('search', $params, $builder);
         $engine->search($builder);
@@ -225,7 +227,7 @@ class ElasticEngineTest extends TestCase
 
         $model = $this->mockModel();
 
-        $builder = (new SearchBuilder($model, 'phone'))
+        $builder = (new SearchBuilderStub($model, 'phone'))
             ->where('brand', 'apple')
             ->where('color', '=', 'red')
             ->where('memory', '>=', 32)
@@ -271,7 +273,7 @@ class ElasticEngineTest extends TestCase
         ];
 
         $model   = $this->mockModel();
-        $builder = (new SearchBuilder($model, 'test query'))->whereIn('id', [1, 2, 3, 4, 5]);
+        $builder = (new SearchBuilderStub($model, 'test query'))->whereIn('id', [1, 2, 3, 4, 5]);
 
         $this->getEngine('search', $params, $builder)->search($builder);
 
@@ -309,7 +311,7 @@ class ElasticEngineTest extends TestCase
 
         $model = $this->mockModel();
 
-        $builder = (new SearchBuilder($model, 'test query'))->whereNotIn('id', [1, 2, 3, 4, 5]);
+        $builder = (new SearchBuilderStub($model, 'test query'))->whereNotIn('id', [1, 2, 3, 4, 5]);
 
         $this->getEngine('search', $params, $builder)->search($builder);
 
@@ -350,7 +352,7 @@ class ElasticEngineTest extends TestCase
 
         $model = $this->mockModel();
 
-        $builder = (new SearchBuilder($model, 'test query'))->whereBetween('price', [100, 300]);
+        $builder = (new SearchBuilderStub($model, 'test query'))->whereBetween('price', [100, 300]);
 
         $this->getEngine('search', $params, $builder)->search($builder);
 
@@ -391,7 +393,7 @@ class ElasticEngineTest extends TestCase
 
         $model = $this->mockModel();
 
-        $builder = (new SearchBuilder($model, 'test query'))->whereNotBetween('price', [100, 300]);
+        $builder = (new SearchBuilderStub($model, 'test query'))->whereNotBetween('price', [100, 300]);
 
         $this->getEngine('search', $params, $builder)->search($builder);
 
@@ -429,7 +431,7 @@ class ElasticEngineTest extends TestCase
 
         $model = $this->mockModel();
 
-        $builder = (new SearchBuilder($model, 'test query'))->whereExists('sale');
+        $builder = (new SearchBuilderStub($model, 'test query'))->whereExists('sale');
 
         $this->getEngine('search', $params, $builder)->search($builder);
 
@@ -467,7 +469,7 @@ class ElasticEngineTest extends TestCase
 
         $model = $this->mockModel();
 
-        $builder = (new SearchBuilder($model, 'test query'))->whereNotExists('sale');
+        $builder = (new SearchBuilderStub($model, 'test query'))->whereNotExists('sale');
 
         $this->getEngine('search', $params, $builder)->search($builder);
 
@@ -508,7 +510,7 @@ class ElasticEngineTest extends TestCase
 
         $model = $this->mockModel();
 
-        $builder = (new SearchBuilder($model, 'phone'))->whereRegexp('brand', 'a[a-z]+', 'ALL');
+        $builder = (new SearchBuilderStub($model, 'phone'))->whereRegexp('brand', 'a[a-z]+', 'ALL');
 
         $this->getEngine('search', $params, $builder)->search($builder);
 
@@ -535,7 +537,7 @@ class ElasticEngineTest extends TestCase
 
         $model = $this->mockModel();
 
-        $builder = (new SearchBuilder($model, 'John'))->strategy(function ($builder) {
+        $builder = (new SearchBuilderStub($model, 'John'))->strategy(function ($builder) {
             return [
                 'must' => [
                     'match' => [
@@ -568,7 +570,7 @@ class ElasticEngineTest extends TestCase
 
         $model = $this->mockModel();
 
-        $builder = new SearchBuilder($model, '');
+        $builder = new SearchBuilderStub($model, '');
 
         $this->getEngine('search', $params, $builder)->search($builder);
 
@@ -640,7 +642,7 @@ class ElasticEngineTest extends TestCase
         ];
 
         $model   = $this->mockModel();
-        $builder = new SearchBuilder($model, 'test query');
+        $builder = new SearchBuilderStub($model, 'test query');
         $engine  = $this->getEngine('search', $params, $builder, ['limit' => $size, 'page' => 2]);
 
         $engine->paginate($builder, $size, 2);
@@ -734,7 +736,7 @@ class ElasticEngineTest extends TestCase
     {
         $model = $this->mockModel();
 
-        $builder = new SearchBuilder($model, 'test query');
+        $builder = new SearchBuilderStub($model, 'test query');
 
         $this->getEngine('debug', true, $builder)->explain();
 
@@ -744,7 +746,7 @@ class ElasticEngineTest extends TestCase
     public function testIfTheProfileMethodBuildsCorrectPayload()
     {
         $model   = $this->mockModel();
-        $builder = new SearchBuilder($model, 'test query');
+        $builder = new SearchBuilderStub($model, 'test query');
 
         $this->getEngine('profile', true, $builder)->profile();
 

@@ -1,16 +1,21 @@
 <?php
+
 namespace SynergyScoutElastic\Models;
 
-
-use Laravel\Scout\Events\ModelsImported;
+use SynergyScoutElastic\Builders\SearchBuilder;
 use SynergyScoutElastic\Stubs\ModelStub;
 use SynergyScoutElastic\TestCase;
 
-class SearchableModelTest extends TestCase {
+class SearchableModelTest extends TestCase
+{
 
-    public function testSearchableModelGeneratesQueries(){
+    public function testSearchableModelGeneratesQueries()
+    {
 
-        $model = new ModelStub();
-        $model->search('shoe', function(){});
+        $model  = new ModelStub();
+        $result = $model->search('shoe', function () {
+        });
+
+        $this->assertInstanceOf(SearchBuilder::class, $result);
     }
 }

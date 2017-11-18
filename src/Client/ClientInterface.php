@@ -15,7 +15,7 @@ interface ClientInterface
 
     public function search(SearchBuilder $builder, array $options);
 
-    public function buildSearchQueryPayloadCollection(SearchBuilder $builder, array $options): Collection;
+    public function buildSearchQueryPayloadCollection(SearchBuilder $builder, array $options = []): Collection;
 
     public function searchRaw(Model $model, $query);
 
