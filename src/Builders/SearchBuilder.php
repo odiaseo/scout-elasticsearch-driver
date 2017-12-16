@@ -96,7 +96,7 @@ class SearchBuilder extends Builder
         }
 
         if (starts_with($field, '-')) {
-            $boolOperator = 'should';
+            $boolOperator = 'must_not';
         }
 
         $field = trim($field, '-+');
