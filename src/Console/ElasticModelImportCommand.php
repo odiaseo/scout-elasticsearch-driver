@@ -3,14 +3,17 @@
 namespace SynergyScoutElastic\Console;
 
 use Illuminate\Contracts\Events\Dispatcher;
+use Illuminate\Database\Eloquent\Model;
 use Laravel\Scout\Events\ModelsImported;
-use SynergyScoutElastic\Console\Features\RequiresModelArgument;
+use SynergyScoutElastic\Models\Searchable;
+use SynergyScoutElastic\Models\SearchableInterface;
 
 class ElasticModelImportCommand extends BaseCommand
 {
-    use RequiresModelArgument;
 
-    protected $name = 'search:model-import';
+    protected $signature = 'search:model-import
+    {model : The model class}
+    {name : Name of elastic search index}';
 
     /**
      * The console command description.
@@ -48,5 +51,32 @@ class ElasticModelImportCommand extends BaseCommand
         $end = time();
         $duration = round(($end - $start) / 60, 1);
         $this->info(sprintf('All [%s] records have been imported in %s mins.', $class, $duration));
+    }
+
+    /**
+     * @return SearchableInterface | Model
+     */
+    protected function getModel()
+    {
+        $modelClass = trim($this->argument('model'));
+
+        $modelInstance = new $modelClass;
+
+        if (!($modelInstance instanceof Model) || !$modelInstance instanceof SearchableInterface) {
+            $this->error(sprintf(
+                'The %s class must extend %s, implement %s and use the %s trait.',
+                $modelClass,
+                Model::class,
+                SearchableInterface::class,
+                Searchable::class
+            ));
+
+            return null;
+        }
+
+        $name = (string)$this->argument('name');
+        $modelInstance->getIndexConfigurator()->setName($name);
+
+        return $modelInstance;
     }
 }
