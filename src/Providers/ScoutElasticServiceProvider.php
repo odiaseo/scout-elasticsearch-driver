@@ -11,6 +11,7 @@ use SynergyScoutElastic\Client\ScoutElasticClient;
 use SynergyScoutElastic\Console\ElasticIndexCreateCommand;
 use SynergyScoutElastic\Console\ElasticIndexDropCommand;
 use SynergyScoutElastic\Console\ElasticIndexUpdateCommand;
+use SynergyScoutElastic\Console\ElasticModelImportCommand;
 use SynergyScoutElastic\Console\ElasticUpdateMappingCommand;
 use SynergyScoutElastic\Console\IndexConfiguratorMakeCommand;
 use SynergyScoutElastic\Console\SearchableModelMakeCommand;
@@ -44,6 +45,7 @@ class ScoutElasticServiceProvider extends ServiceProvider
             ElasticIndexUpdateCommand::class,
             ElasticIndexDropCommand::class,
             ElasticUpdateMappingCommand::class,
+            ElasticModelImportCommand::class,
         ]);
 
         $this->app->make(EngineManager::class)

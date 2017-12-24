@@ -20,7 +20,6 @@ class ElasticUpdateMappingCommand extends BaseCommand
         }
 
         $configurator = $model->getIndexConfigurator();
-
         $mapping = array_merge_recursive($configurator->getDefaultMapping(), $model->getMapping());
 
         if (empty($mapping)) {

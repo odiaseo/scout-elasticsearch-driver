@@ -4,6 +4,7 @@ namespace SynergyScoutElastic\Console\Features;
 
 use Illuminate\Database\Eloquent\Model;
 use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Input\InputOption;
 use SynergyScoutElastic\Models\Searchable;
 use SynergyScoutElastic\Models\SearchableInterface;
 
@@ -30,6 +31,9 @@ trait RequiresModelArgument
             return null;
         }
 
+        $name = (string)$this->option('name');
+        $modelInstance->getIndexConfigurator()->setName($name);
+
         return $modelInstance;
     }
 
@@ -37,6 +41,13 @@ trait RequiresModelArgument
     {
         return [
             ['model', InputArgument::REQUIRED, 'The model class'],
+        ];
+    }
+
+    protected function getOptions()
+    {
+        return [
+            ['name', null, InputOption::VALUE_REQUIRED, 'Name of elastic search index'],
         ];
     }
 }

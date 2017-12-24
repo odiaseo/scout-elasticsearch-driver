@@ -18,6 +18,13 @@ interface SearchableInterface
     public function getIndexConfigurator(): IndexConfigurator;
 
     /**
+     * @param IndexConfigurator $configurator
+     *
+     * @return mixed
+     */
+    public function setIndexConfigurator(IndexConfigurator $configurator);
+
+    /**
      * @return array
      */
     public function getMapping(): array;

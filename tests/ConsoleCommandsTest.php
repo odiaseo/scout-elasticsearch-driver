@@ -63,6 +63,7 @@ class ConsoleCommandsTest extends TestCase
     {
         $input = $this->prophesize(InputInterface::class);
         $input->getArguments()->willReturn($arguments);
+        $input->getOption('name')->willReturn('test_index');
 
         foreach ($arguments as $key => $value) {
             $input->getArgument($key)->willReturn($value);

@@ -60,6 +60,11 @@ trait Searchable
      */
     public function getIndexConfigurator(): IndexConfigurator
     {
+
+        if ($this->indexConfigurator instanceof IndexConfigurator) {
+            return $this->indexConfigurator;
+        }
+
         static $indexConfigurator;
 
         if (!$indexConfigurator) {
@@ -72,6 +77,13 @@ trait Searchable
         }
 
         return $indexConfigurator;
+    }
+
+    public function setIndexConfigurator(IndexConfigurator $configurator)
+    {
+        $this->indexConfigurator = $configurator;
+
+        return $this;
     }
 
     /**
