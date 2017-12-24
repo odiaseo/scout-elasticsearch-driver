@@ -3,6 +3,7 @@
 namespace SynergyScoutElastic\Console;
 
 use SynergyScoutElastic\Console\Features\RequiresIndexConfiguratorArgument;
+use SynergyScoutElastic\IndexConfigurator;
 use SynergyScoutElastic\Payloads\IndexPayload;
 
 class ElasticIndexCreateCommand extends BaseCommand
@@ -19,6 +20,11 @@ class ElasticIndexCreateCommand extends BaseCommand
             return;
         }
 
+        $this->createIndex($configurator);
+    }
+
+    protected function createIndex(IndexConfigurator $configurator)
+    {
         $payload = (new IndexPayload($configurator))
             ->setIfNotEmpty('body.settings', $configurator->getSettings())
             ->setIfNotEmpty('body.mappings._default_', $configurator->getDefaultMapping())

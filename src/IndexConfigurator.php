@@ -19,11 +19,11 @@ abstract class IndexConfigurator
      */
     public function getName()
     {
-        if (isset($this->name)) {
-            return $this->name;
+        if (empty($this->name)) {
+            $this->name = $this->getDefaultIndexName();
         }
 
-        return $this->getDefaultIndexName();
+        return $this->name;
     }
 
     /**
