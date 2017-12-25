@@ -37,7 +37,7 @@ abstract class IndexConfigurator
     /**
      * @return string
      */
-    protected function getDefaultIndexName()
+    public function getDefaultIndexName()
     {
         return Str::snake(str_replace('IndexConfigurator', '', class_basename($this)));
     }

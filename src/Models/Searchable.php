@@ -72,8 +72,11 @@ trait Searchable
                 throw new Exception(sprintf('An index configurator for the %s model is not specified.', __CLASS__));
             }
 
+            /** @var IndexConfigurator $indexConfigurator */
+
             $indexConfiguratorClass = $this->indexConfigurator;
             $indexConfigurator = new $indexConfiguratorClass;
+            $indexConfigurator->setName($indexConfigurator->getDefaultIndexName());
         }
 
         return $indexConfigurator;
