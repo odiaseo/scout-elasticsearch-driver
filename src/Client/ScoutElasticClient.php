@@ -66,6 +66,14 @@ class ScoutElasticClient implements ClientInterface
     /**
      * @inheritdoc
      */
+    public function bulk(array $payload)
+    {
+        return $this->client->bulk($payload);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function search(SearchBuilder $builder, array $options)
     {
         $result = null;

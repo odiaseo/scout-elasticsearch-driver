@@ -4,6 +4,7 @@ namespace SynergyScoutElastic;
 
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Foundation\Console\Kernel;
+use Illuminate\Log\Writer;
 use Mockery;
 use Prophecy\Argument;
 use stdClass;
@@ -16,7 +17,47 @@ use SynergyScoutElastic\Stubs\SearchBuilderStub;
 class ElasticEngineTest extends TestCase
 {
 
-    public function testIfTheUpdateMethodBuildCorrectPayload()
+    public function testIfTheUpdateMethodBuildCollectionPayload()
+    {
+        $model = $this->mockModel([
+            'id'         => 1,
+            'test_field' => 'test text'
+        ]);
+
+        $engine = $this->getEngine('bulk', Argument::cetera());
+
+        $engine->update(new Collection([$model]));
+
+        $this->addToAssertionCount(1);
+    }
+
+    protected function mockModel($fields = [])
+    {
+        return Mockery::mock(ModelStub::class)
+            ->makePartial()
+            ->forceFill($fields);
+    }
+
+    private function getEngine($method, $params, $builder = null, $options = [])
+    {
+        $client = $this->prophesize(ClientInterface::class);
+        $kernel = $this->prophesize(Kernel::class);
+        $logger = $this->prophesize(Writer::class);
+
+        if ($method == 'search') {
+            $client->$method(Argument::cetera())->shouldbeCalled();
+            $client->buildSearchQueryPayloadCollection($builder, $options)->willReturn($params);
+        } elseif ($method) {
+            $client->$method($params)->shouldbeCalled();
+        }
+
+        $engine = new ElasticEngine($kernel->reveal(), $client->reveal(), true);
+        $engine->setLogger($logger->reveal());
+
+        return $engine;
+    }
+
+    public function testIfTheUpdateMethodBuildArrayPayload()
     {
         $params = [
             'index' => 'test_index',
@@ -34,32 +75,9 @@ class ElasticEngineTest extends TestCase
         ]);
 
         $engine = $this->getEngine('index', $params);
-        $engine->update(Collection::make([$model]));
+        $engine->update([$model]);
 
         $this->addToAssertionCount(1);
-    }
-
-    protected function mockModel($fields = [])
-    {
-        return Mockery::mock(ModelStub::class)
-            ->makePartial()
-            ->forceFill($fields);
-    }
-
-    private function getEngine($method, $params, $builder = null, $options = [])
-    {
-        $client = $this->prophesize(ClientInterface::class);
-        $kernel = $this->prophesize(Kernel::class);
-
-        if ($method == 'search') {
-            $client->$method(Argument::cetera())->shouldbeCalled();
-            $client->buildSearchQueryPayloadCollection($builder, $options)->willReturn($params);
-        } elseif ($method) {
-            $client->$method($params)->shouldbeCalled();
-        }
-        $engine = new ElasticEngine($kernel->reveal(), $client->reveal(), true);
-
-        return $engine;
     }
 
     public function testIfTheDeleteMethodBuildsCorrectPayload()
@@ -70,7 +88,7 @@ class ElasticEngineTest extends TestCase
             'id'    => 1
         ];
 
-        $model  = $this->mockModel(['id' => 1]);
+        $model = $this->mockModel(['id' => 1]);
         $engine = $this->getEngine('delete', $params);
         $engine->delete(Collection::make([$model]));
         $this->addToAssertionCount(1);
@@ -78,7 +96,7 @@ class ElasticEngineTest extends TestCase
 
     public function testIfTheSearchMethodBuildsCorrectPayload()
     {
-        $params  = [
+        $params = [
             'index' => 'test_index',
             'type'  => 'test_table',
             'body'  => [
@@ -94,7 +112,7 @@ class ElasticEngineTest extends TestCase
             ]
         ];
         $builder = new SearchBuilder($this->mockModel(), 'test query');
-        $engine  = $this->getEngine('search', $params, $builder);
+        $engine = $this->getEngine('search', $params, $builder);
         $engine->search($builder);
 
         $this->addToAssertionCount(1);
@@ -121,7 +139,7 @@ class ElasticEngineTest extends TestCase
         ];
 
         $builder = (new SearchBuilderStub($this->mockModel(), 'test query'))->take(10);
-        $engine  = $this->getEngine('search', $params, $builder);
+        $engine = $this->getEngine('search', $params, $builder);
         $engine->search($builder);
 
         $this->addToAssertionCount(1);
@@ -150,7 +168,7 @@ class ElasticEngineTest extends TestCase
 
         $builder = (new SearchBuilderStub($this->mockModel(), 'test query'))
             ->orderBy('name', 'asc');
-        $engine  = $this->getEngine('search', $params, $builder);
+        $engine = $this->getEngine('search', $params, $builder);
         $engine->search($builder);
 
         $this->addToAssertionCount(1);
@@ -272,7 +290,7 @@ class ElasticEngineTest extends TestCase
             ]
         ];
 
-        $model   = $this->mockModel();
+        $model = $this->mockModel();
         $builder = (new SearchBuilderStub($model, 'test query'))->whereIn('id', [1, 2, 3, 4, 5]);
 
         $this->getEngine('search', $params, $builder)->search($builder);
@@ -579,7 +597,7 @@ class ElasticEngineTest extends TestCase
 
     public function testIfTheSearchRawMethodBuildsCorrectPayload()
     {
-        $params     = [
+        $params = [
             'index' => 'test_index',
             'type'  => 'test_table',
             'body'  => [
@@ -605,9 +623,9 @@ class ElasticEngineTest extends TestCase
                 ]
             ]
         ];
-        $model      = $this->mockModel();
-        $client     = $this->prophesize(ClientInterface::class);
-        $kernel     = $this->prophesize(Kernel::class);
+        $model = $this->mockModel();
+        $client = $this->prophesize(ClientInterface::class);
+        $kernel = $this->prophesize(Kernel::class);
 
         $client->searchRaw($model, $queryArray)->shouldbeCalled();
         $client->buildTypePayload($model, $queryArray)->willReturn($params);
@@ -620,7 +638,7 @@ class ElasticEngineTest extends TestCase
 
     public function testIfThePaginateMethodBuildsCorrectPayload()
     {
-        $size  = 8;
+        $size = 8;
         $start = 16;
 
         $params = [
@@ -641,9 +659,9 @@ class ElasticEngineTest extends TestCase
             ]
         ];
 
-        $model   = $this->mockModel();
+        $model = $this->mockModel();
         $builder = new SearchBuilderStub($model, 'test query');
-        $engine  = $this->getEngine('search', $params, $builder, ['limit' => $size, 'page' => 2]);
+        $engine = $this->getEngine('search', $params, $builder, ['limit' => $size, 'page' => 2]);
 
         $engine->paginate($builder, $size, 2);
 
@@ -745,7 +763,7 @@ class ElasticEngineTest extends TestCase
 
     public function testIfTheProfileMethodBuildsCorrectPayload()
     {
-        $model   = $this->mockModel();
+        $model = $this->mockModel();
         $builder = new SearchBuilderStub($model, 'test query');
 
         $this->getEngine('profile', true, $builder)->profile();

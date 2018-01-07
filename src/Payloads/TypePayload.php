@@ -16,6 +16,7 @@ class TypePayload extends IndexPayload
 
     public function __construct(Model $model)
     {
+        //if (!in_array(SearchableInterface::class, class_uses_recursive($model))) {
         if (!$model instanceof SearchableInterface) {
             throw new InvalidModelException($this->getInvalidModelMessage(), 432);
         }

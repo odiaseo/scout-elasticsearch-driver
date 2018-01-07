@@ -2,15 +2,19 @@
 
 namespace SynergyScoutElastic;
 
+use Exception;
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Log\Writer;
 use Laravel\Scout\Builder;
 use Laravel\Scout\Engines\Engine;
 use SynergyScoutElastic\Builders\SearchBuilder;
 use SynergyScoutElastic\Client\ClientInterface;
 use SynergyScoutElastic\Models\SearchableInterface;
 use SynergyScoutElastic\Payloads\DocumentPayload;
+use SynergyScoutElastic\Payloads\RawPayload;
+use SynergyScoutElastic\Payloads\TypePayload;
 
 class ElasticEngine extends Engine
 {
@@ -57,24 +61,35 @@ class ElasticEngine extends Engine
     private $limit = 10;
 
     /**
+     * @var Writer
+     */
+    private $logger;
+
+    /**
      * ElasticEngine constructor.
      *
-     * @param Kernel $kernel
+     * @param Kernel          $kernel
      * @param ClientInterface $elasticClient
-     * @param bool $updateMapping
+     * @param bool            $updateMapping
      */
     public function __construct(Kernel $kernel, ClientInterface $elasticClient, bool $updateMapping)
     {
         $this->elasticClient = $elasticClient;
-        $this->kernel        = $kernel;
+        $this->kernel = $kernel;
         $this->updateMapping = $updateMapping;
     }
 
     /**
-     * @param Collection $models
+     * @param Collection|array $models
      */
     public function update($models)
     {
+        if ($models instanceof Collection) {
+            return $this->bulkUpdate($models);
+        }
+
+        $models = new Collection($models);
+
         $models->each(function ($model) {
             /** @var $model SearchableInterface | Model */
             if ($this->updateMapping) {
@@ -90,16 +105,76 @@ class ElasticEngine extends Engine
                 return false;
             }
 
-            $payload = (new DocumentPayload($model))
-                ->set('body', $array)
-                ->get();
+            try {
+                $payload = (new DocumentPayload($model))
+                    ->set('body', $array)
+                    ->get();
 
-            $this->elasticClient->index($payload);
+                $this->elasticClient->index($payload);
+            } catch (Exception $exception) {
+                $data = [
+                    'payload' => $array,
+                    'error'   => $exception->__toString()
+                ];
+
+                $this->getLogger()->error($data);
+            }
 
             return true;
         });
 
         $this->updateMapping = false;
+    }
+
+    /**
+     * @param Collection $models
+     */
+    public function bulkUpdate(Collection $models)
+    {
+        $model = $models->first();
+        $bulkPayload = new TypePayload($model);
+
+        $models->each(function ($model) use ($bulkPayload) {
+            /** @var $model SearchableInterface | Model */
+            $modelData = $model->toSearchableArray();
+
+            if (empty($modelData)) {
+                return true;
+            }
+
+            $actionPayload = (new RawPayload())
+                ->set('index._id', $model->getKey());
+
+            $bulkPayload
+                ->add('body', $actionPayload->get())
+                ->add('body', $modelData);
+        });
+
+        try {
+            $this->elasticClient->bulk($bulkPayload->get());
+        } catch (Exception $exception) {
+            $this->getLogger()->error($exception->__toString());
+        }
+    }
+
+    /**
+     * @return Writer
+     */
+    public function getLogger()
+    {
+        if (!$this->logger) {
+            $this->logger = app()->make(Writer::class);
+        }
+
+        return $this->logger;
+    }
+
+    /**
+     * @param Writer $logger
+     */
+    public function setLogger(Writer $logger)
+    {
+        $this->logger = $logger;
     }
 
     /**
@@ -122,7 +197,7 @@ class ElasticEngine extends Engine
     public function search(Builder $builder)
     {
         $options['limit'] = $this->limit;
-        $options['page']  = $this->page;
+        $options['page'] = $this->page;
 
         $res = $this->performSearch($builder, $options);
 
@@ -131,7 +206,7 @@ class ElasticEngine extends Engine
 
     /**
      * @param Builder $builder
-     * @param array $options
+     * @param array   $options
      *
      * @return mixed
      */
@@ -154,8 +229,8 @@ class ElasticEngine extends Engine
 
     /**
      * @param Builder $builder
-     * @param int $perPage
-     * @param int $page
+     * @param int     $perPage
+     * @param int     $page
      *
      * @return mixed
      */
@@ -191,13 +266,13 @@ class ElasticEngine extends Engine
             });
         }
 
-        $ids      = $this->mapIds($results);
+        $ids = $this->mapIds($results);
         $modelKey = $model->getKeyName();
 
         if (is_array($this->fields)) {
-            $fields   = $this->fields;
+            $fields = $this->fields;
             $fields[] = $modelKey;
-            $fields   = array_unique($fields);
+            $fields = array_unique($fields);
 
             $model = $model->select($fields);
         }
@@ -237,7 +312,7 @@ class ElasticEngine extends Engine
     private function pluckFields(array $values, array $fields)
     {
         $array = [];
-        $res   = array_only(array_dot($values), $fields);
+        $res = array_only(array_dot($values), $fields);
 
         foreach ($res as $key => $value) {
             array_set($array, $key, $value);
@@ -356,5 +431,4 @@ class ElasticEngine extends Engine
 
         return $this;
     }
-
 }

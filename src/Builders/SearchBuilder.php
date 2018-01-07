@@ -110,7 +110,7 @@ class SearchBuilder extends Builder
 
         switch ($operator) {
             case '=':
-                $this->wheres[$boolOperator][] = ['term' => [$field => $value]];
+                $this->wheres[$boolOperator][] = ['match' => [$field => $value]];
                 break;
 
             case '>':
@@ -131,7 +131,7 @@ class SearchBuilder extends Builder
 
             case '!=':
             case '<>':
-                $this->wheres[$boolOperator][] = ['term' => [$field => $value]];
+                $this->wheres[$boolOperator][] = ['match' => [$field => $value]];
                 break;
         }
 

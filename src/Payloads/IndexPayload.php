@@ -4,7 +4,7 @@ namespace SynergyScoutElastic\Payloads;
 
 use SynergyScoutElastic\IndexConfigurator;
 
-class IndexPayload
+class IndexPayload extends RawPayload
 {
     protected $payload = [];
 

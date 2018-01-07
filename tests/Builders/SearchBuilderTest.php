@@ -65,7 +65,7 @@ class SearchBuilderTest extends TestCase
     public function whereOperatorProvider()
     {
         return [
-            ['where', 'id', 1, '{"must":[{"term":{"id":1}}]}'],
+            ['where', 'id', 1, '{"must":[{"match":{"id":1}}]}'],
             ['whereIn', 'id', [1, 2, 3], '{"must":[{"terms":{"id":[1,2,3]}}]}'],
             ['whereNotIn', 'id', [2, 4, 6], '{"must_not":[{"terms":{"id":[2,4,6]}}]}'],
             ['whereBetween', 'id', [1, 10], '{"must":[{"range":{"id":{"gte":1,"lte":10}}}]}'],

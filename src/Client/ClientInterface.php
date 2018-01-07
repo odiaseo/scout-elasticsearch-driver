@@ -13,6 +13,8 @@ interface ClientInterface
 
     public function index(array $payload);
 
+    public function bulk(array $payload);
+
     public function search(SearchBuilder $builder, array $options);
 
     public function buildSearchQueryPayloadCollection(SearchBuilder $builder, array $options = []): Collection;

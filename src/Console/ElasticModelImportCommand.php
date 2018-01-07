@@ -126,7 +126,7 @@ class ElasticModelImportCommand extends ElasticIndexCreateCommand
         $aliases = $this->client->indices()->getAliases(['index' => $alias]);
 
         foreach (array_keys($aliases) as $name) {
-            if ($activeIndex !== $name) {
+            if ($activeIndex && $activeIndex !== $name) {
                 $this->client->indices()->delete(['index' => $name]);
                 $this->info(sprintf(' >> Linked index[%s] deleted ', $name));
             }
