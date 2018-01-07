@@ -122,6 +122,10 @@ class ElasticModelImportCommand extends ElasticIndexCreateCommand
 
     protected function removeLinkedIndexes(string $alias, string $activeIndex)
     {
+        if ($alias == $activeIndex) {
+            return false;
+        }
+
         $this->client->indices()->getAliases(['index' => $alias]);
         $aliases = $this->client->indices()->getAliases(['index' => $alias]);
 
@@ -131,5 +135,7 @@ class ElasticModelImportCommand extends ElasticIndexCreateCommand
                 $this->info(sprintf(' >> Linked index[%s] deleted ', $name));
             }
         }
+
+        return true;
     }
 }
