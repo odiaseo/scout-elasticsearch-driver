@@ -6,7 +6,7 @@ use Exception;
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Log\Writer;
+use Illuminate\Log\Logger as Writer;
 use Laravel\Scout\Builder;
 use Laravel\Scout\Engines\Engine;
 use SynergyScoutElastic\Builders\SearchBuilder;
@@ -68,14 +68,14 @@ class ElasticEngine extends Engine
     /**
      * ElasticEngine constructor.
      *
-     * @param Kernel          $kernel
+     * @param Kernel $kernel
      * @param ClientInterface $elasticClient
-     * @param bool            $updateMapping
+     * @param bool $updateMapping
      */
     public function __construct(Kernel $kernel, ClientInterface $elasticClient, bool $updateMapping)
     {
         $this->elasticClient = $elasticClient;
-        $this->kernel = $kernel;
+        $this->kernel        = $kernel;
         $this->updateMapping = $updateMapping;
     }
 
@@ -131,7 +131,7 @@ class ElasticEngine extends Engine
      */
     public function bulkUpdate(Collection $models)
     {
-        $model = $models->first();
+        $model       = $models->first();
         $bulkPayload = new TypePayload($model);
 
         $models->each(function ($model) use ($bulkPayload) {
@@ -197,7 +197,7 @@ class ElasticEngine extends Engine
     public function search(Builder $builder)
     {
         $options['limit'] = $this->limit;
-        $options['page'] = $this->page;
+        $options['page']  = $this->page;
 
         $res = $this->performSearch($builder, $options);
 
@@ -206,7 +206,7 @@ class ElasticEngine extends Engine
 
     /**
      * @param Builder $builder
-     * @param array   $options
+     * @param array $options
      *
      * @return mixed
      */
@@ -229,8 +229,8 @@ class ElasticEngine extends Engine
 
     /**
      * @param Builder $builder
-     * @param int     $perPage
-     * @param int     $page
+     * @param int $perPage
+     * @param int $page
      *
      * @return mixed
      */
@@ -243,12 +243,13 @@ class ElasticEngine extends Engine
     }
 
     /**
+     * @param Builder $builder
      * @param mixed $results
      * @param Model $model
      *
      * @return Collection
      */
-    public function map($results, $model)
+    public function map(Builder $builder, $results, $model)
     {
         if ($this->getTotalCount($results) === 0) {
             return Collection::make([]);
@@ -266,13 +267,13 @@ class ElasticEngine extends Engine
             });
         }
 
-        $ids = $this->mapIds($results);
+        $ids      = $this->mapIds($results);
         $modelKey = $model->getKeyName();
 
         if (is_array($this->fields)) {
-            $fields = $this->fields;
+            $fields   = $this->fields;
             $fields[] = $modelKey;
-            $fields = array_unique($fields);
+            $fields   = array_unique($fields);
 
             $model = $model->select($fields);
         }
@@ -312,7 +313,7 @@ class ElasticEngine extends Engine
     private function pluckFields(array $values, array $fields)
     {
         $array = [];
-        $res = array_only(array_dot($values), $fields);
+        $res   = array_only(array_dot($values), $fields);
 
         foreach ($res as $key => $value) {
             array_set($array, $key, $value);
