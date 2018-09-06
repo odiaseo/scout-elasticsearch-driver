@@ -744,7 +744,7 @@ class ElasticEngineTest extends TestCase
             ]))
             ->getMock();
 
-        $databaseResult = $this->getEngine('', [])->map($builder->reveal(), $searchResults, $model);
+        $databaseResult = $this->getEngine('', [])->map($searchResults, $model);
 
         $this->assertEquals(
             array_pluck($searchResults['hits']['hits'], '_id'),

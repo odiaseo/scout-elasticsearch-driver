@@ -243,13 +243,12 @@ class ElasticEngine extends Engine
     }
 
     /**
-     * @param Builder $builder
      * @param mixed $results
      * @param Model $model
      *
      * @return Collection
      */
-    public function map(Builder $builder, $results, $model)
+    public function map($results, $model)
     {
         if ($this->getTotalCount($results) === 0) {
             return Collection::make([]);
