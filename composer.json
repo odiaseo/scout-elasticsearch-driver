@@ -23,15 +23,15 @@
   "require": {
     "php": ">=7.1",
     "elasticsearch/elasticsearch": "~5.3",
-    "laravel/scout": "~4.0",
     "laravel/framework": "~5.6",
-    "doctrine/instantiator": "~1.0.3"
+    "doctrine/instantiator": "~1.0.3",
+    "laravel/scout": "^7.2"
   },
   "require-dev": {
     "barryvdh/laravel-debugbar": "*",
     "phpunit/phpunit": "^6.2",
     "mockery/mockery": "0.9.*",
-    "satooshi/php-coveralls": "^1.0"
+    "php-coveralls/php-coveralls": "^2.1"
   },
   "autoload": {
     "psr-4": {

@@ -243,12 +243,12 @@ class ElasticEngine extends Engine
     }
 
     /**
+     * @param Builder $builder
      * @param mixed $results
      * @param Model $model
-     *
-     * @return Collection
+     * @return Collection|\Illuminate\Support\Collection
      */
-    public function map($results, $model)
+    public function map(Builder $builder, $results, $model)
     {
         if ($this->getTotalCount($results) === 0) {
             return Collection::make([]);
@@ -430,5 +430,10 @@ class ElasticEngine extends Engine
         $this->limit = $limit;
 
         return $this;
+    }
+
+    public function flush($model)
+    {
+        $model->save();
     }
 }
