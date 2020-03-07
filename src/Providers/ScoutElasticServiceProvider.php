@@ -31,7 +31,7 @@ class ScoutElasticServiceProvider extends ServiceProvider
     public function boot()
     {
         $this->publishes([
-            __DIR__ . '/../../config/synergy-scout-elastic.php' => config_path('synergy-scout-elastic.php'),
+            __DIR__ . '/../../config/synergy-scout-elastic.php' => $this->app->configPath('synergy-scout-elastic.php'),
         ]);
 
         $this->commands([

@@ -23,7 +23,7 @@ class SearchableModelMakeCommand extends ModelMakeCommand
         $options[] = ['index-configurator', 'i', InputOption::VALUE_REQUIRED,
             'Specify the index configurator for the model. It\'ll be created if doesn\'t exist.'];
 
-        $options[] = ['strategy', 's', InputOption::VALUE_REQUIRED,
+        $options[] = ['strategy', 'g', InputOption::VALUE_REQUIRED,
             'Specify the search strategy for the model. It\'ll be created if doesn\'t exist.'];
 
         return $options;

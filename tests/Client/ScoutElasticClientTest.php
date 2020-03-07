@@ -22,7 +22,7 @@ class ScoutElasticClientTest extends TestCase
      */
     private $client;
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
 
@@ -40,12 +40,12 @@ class ScoutElasticClientTest extends TestCase
             ->profile(false);
 
         $this->assertSame(0, count($this->client->getSearchQueries()));
-        $this->assertInternalType('array', $this->client->index([]));
+        $this->assertIsArray( $this->client->index([]));
     }
 
     public function testClientDeleteReturnsCorrectResponse()
     {
-        $this->assertInternalType('array', $this->client->delete([]));
+        $this->assertIsArray($this->client->delete([]));
     }
 
     public function testClientSearchReturnsCorrectResponse()
@@ -55,13 +55,13 @@ class ScoutElasticClientTest extends TestCase
         ];
         $builder = new SearchBuilder(new ModelStub(), 'shoe');
         $result  = $this->client->search($builder, $options);
-        $this->assertInternalType('array', $result);
+        $this->assertIsArray( $result);
     }
 
     public function testClientSearchRawReturnsCorrectResponse()
     {
         $builder = new SearchBuilder(new ModelStub(), 'shoe');
         $result  = $this->client->searchRaw(new ModelStub(), (new FindAllStrategy($builder))->buildQueryPayload());
-        $this->assertInternalType('array', $result);
+        $this->assertIsArray( $result);
     }
 }

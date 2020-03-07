@@ -3,6 +3,7 @@
 namespace SynergyScoutElastic\Builders;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 use Laravel\Scout\Builder;
 use SynergyScoutElastic\Models\SearchableInterface;
 
@@ -88,14 +89,14 @@ class SearchBuilder extends Builder
         } else {
             $operator = '=';
             foreach ($this->compare as $op) {
-                if (ends_with($value, $op)) {
+                if (Str::endsWith($value, $op)) {
                     $operator = $op;
                     break;
                 }
             }
         }
 
-        if (starts_with($field, '-')) {
+        if (Str::startsWith($field, '-')) {
             $boolOperator = 'must_not';
         }
 

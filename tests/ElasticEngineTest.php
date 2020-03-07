@@ -5,6 +5,7 @@ namespace SynergyScoutElastic;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Foundation\Console\Kernel;
 use Illuminate\Log\Logger;
+use Illuminate\Support\Arr;
 use Laravel\Scout\Builder;
 use Mockery;
 use Prophecy\Argument;
@@ -747,7 +748,7 @@ class ElasticEngineTest extends TestCase
         $databaseResult = $this->getEngine('', [])->map($builder->reveal(), $searchResults, $model);
 
         $this->assertEquals(
-            array_pluck($searchResults['hits']['hits'], '_id'),
+            Arr::pluck($searchResults['hits']['hits'], '_id'),
             $databaseResult->pluck('id')->all()
         );
     }

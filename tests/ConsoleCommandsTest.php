@@ -183,6 +183,7 @@ class ConsoleCommandsTest extends TestCase
     /**
      * @param $className
      * @dataProvider commandNameProvider
+     * @throws \Illuminate\Contracts\Container\BindingResolutionException
      */
     public function testStubFileExists($className)
     {
@@ -194,9 +195,9 @@ class ConsoleCommandsTest extends TestCase
     public function commandNameProvider()
     {
         return [
+            [SearchableModelMakeCommand::class],
             [IndexConfiguratorMakeCommand::class],
             [SearchStrategyMakeCommand::class],
-            [SearchableModelMakeCommand::class],
         ];
     }
 }

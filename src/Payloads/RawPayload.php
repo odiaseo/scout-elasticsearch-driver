@@ -2,6 +2,8 @@
 
 namespace SynergyScoutElastic\Payloads;
 
+use Illuminate\Support\Arr;
+
 class RawPayload
 {
     protected $payload = [];
@@ -18,7 +20,7 @@ class RawPayload
     public function set($key, $value)
     {
         if (!is_null($key)) {
-            array_set($this->payload, $key, $value);
+            Arr::set($this->payload, $key, $value);
         }
 
         return $this;
@@ -26,7 +28,7 @@ class RawPayload
 
     public function has($key)
     {
-        return array_has($this->payload, $key);
+        return Arr::has($this->payload, $key);
     }
 
     public function addIfNotEmpty($key, $value)
@@ -41,15 +43,15 @@ class RawPayload
     public function add($key, $value)
     {
         if (!is_null($key)) {
-            $currentValue = array_get($this->payload, $key, []);
+            $currentValue = Arr::get($this->payload, $key, []);
 
             if (!is_array($currentValue)) {
-                $currentValue = array_wrap($currentValue);
+                $currentValue = Arr::wrap($currentValue);
             }
 
             $currentValue[] = $value;
 
-            array_set($this->payload, $key, $currentValue);
+            Arr::set($this->payload, $key, $currentValue);
         }
 
         return $this;
@@ -57,6 +59,6 @@ class RawPayload
 
     public function get($key = null)
     {
-        return array_get($this->payload, $key);
+        return Arr::get($this->payload, $key);
     }
 }

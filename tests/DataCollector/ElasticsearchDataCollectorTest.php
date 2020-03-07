@@ -12,7 +12,7 @@ class ElasticsearchDataCollectorTest extends TestCase
      */
     private $collector;
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
 

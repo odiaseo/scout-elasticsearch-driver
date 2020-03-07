@@ -4,6 +4,7 @@ namespace SynergyScoutElastic\Client;
 
 use Elasticsearch\Client;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use stdClass;
 use SynergyScoutElastic\Builders\SearchBuilder;
@@ -138,7 +139,7 @@ class ScoutElasticClient implements ClientInterface
             }
 
             $payload = $this->buildSearchQueryPayload($builder, $queryPayload, $options, $wrap);
-            $this->searchQueries[$name] = array_get($payload, 'body');
+            $this->searchQueries[$name] = Arr::get($payload, 'body');
 
             $payloadCollection->push($payload);
         }
@@ -160,8 +161,8 @@ class ScoutElasticClient implements ClientInterface
                 continue;
             }
 
-            if (!array_has($queryPayload, 'filter.bool.'.$clause)) {
-                array_set($queryPayload, 'filter.bool.'.$clause, []);
+            if (!Arr::has($queryPayload, 'filter.bool.'.$clause)) {
+                Arr::set($queryPayload, 'filter.bool.'.$clause, []);
             }
 
             $queryPayload['filter']['bool'][$clause] = array_merge(
@@ -173,7 +174,7 @@ class ScoutElasticClient implements ClientInterface
         $payload = (new TypePayload($builder->model));
 
         if ($wrap) {
-            if(count($queryPayload) === 1 && array_has($queryPayload, 'filter')){
+            if(count($queryPayload) === 1 && Arr::has($queryPayload, 'filter')){
                 $payload->setIfNotEmpty('body.query.constant_score', $queryPayload);
             }else{
                 $payload->setIfNotEmpty('body.query.bool', $queryPayload);

@@ -10,14 +10,14 @@ use PHPUnit\Framework\TestCase as PhpUnitTestCase;
 class TestCase extends PhpUnitTestCase
 {
 
-    public function tearDown()
+    protected function tearDown(): void
     {
         Mockery::close();
 
         parent::tearDown();
     }
 
-    protected function setUp()
+    protected function setUp(): void
     {
         app()->instance('config', new Repository());
         app()->instance('path.config', __DIR__);

@@ -7,6 +7,7 @@ use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Log\Logger as Writer;
+use Illuminate\Support\Arr;
 use Laravel\Scout\Builder;
 use Laravel\Scout\Engines\Engine;
 use SynergyScoutElastic\Builders\SearchBuilder;
@@ -80,7 +81,8 @@ class ElasticEngine extends Engine
     }
 
     /**
-     * @param Collection|array $models
+     * @param Collection $models
+     * @throws \Illuminate\Contracts\Container\BindingResolutionException
      */
     public function update($models)
     {
@@ -128,6 +130,7 @@ class ElasticEngine extends Engine
 
     /**
      * @param Collection $models
+     * @throws \Illuminate\Contracts\Container\BindingResolutionException
      */
     public function bulkUpdate(Collection $models)
     {
@@ -158,7 +161,8 @@ class ElasticEngine extends Engine
     }
 
     /**
-     * @return Writer
+     * @return Writer|mixed
+     * @throws \Illuminate\Contracts\Container\BindingResolutionException
      */
     public function getLogger()
     {
@@ -312,10 +316,10 @@ class ElasticEngine extends Engine
     private function pluckFields(array $values, array $fields)
     {
         $array = [];
-        $res   = array_only(array_dot($values), $fields);
+        $res   = Arr::only(Arr::dot($values), $fields);
 
         foreach ($res as $key => $value) {
-            array_set($array, $key, $value);
+            Arr::set($array, $key, $value);
         }
 
         return $array;
@@ -328,7 +332,7 @@ class ElasticEngine extends Engine
      */
     public function mapIds($results)
     {
-        return array_pluck($results['hits']['hits'], '_id');
+        return Arr::pluck($results['hits']['hits'], '_id');
     }
 
     /**
@@ -339,7 +343,7 @@ class ElasticEngine extends Engine
      */
     private function appendDebugInfo(Model $model, array $hit)
     {
-        $debug = array_get($hit, '_explanation', []);
+        $debug = Arr::get($hit, '_explanation', []);
 
         if ($debug) {
             $model->makeVisible('debug');

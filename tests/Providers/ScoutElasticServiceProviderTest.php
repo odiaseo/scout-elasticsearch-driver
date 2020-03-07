@@ -22,7 +22,7 @@ class ScoutElasticServiceProviderTest extends TestCase
      */
     private $provider;
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
 
@@ -30,6 +30,8 @@ class ScoutElasticServiceProviderTest extends TestCase
         $app    = $this->prophesize(Application::class);
         $client = $this->prophesize(ClientInterface::class);
 
+        $app->configPath('synergy-scout-elastic.php')->willReturn(true);
+        $app->make('config')->willReturn(true);
         $app->make(EngineManager::class)->willReturn(new EngineManager($app->reveal()));
         $app->make(ElasticsearchDataCollector::class)->willReturn(new ElasticsearchDataCollector($client->reveal()));
         $app->make('debugbar')->willReturn(new DebugBar());

@@ -2,6 +2,7 @@
 
 namespace SynergyScoutElastic\Payloads;
 
+use Illuminate\Support\Arr;
 use SynergyScoutElastic\IndexConfigurator;
 
 class IndexPayload extends RawPayload
@@ -31,7 +32,7 @@ class IndexPayload extends RawPayload
     public function set($key, $value)
     {
         if (!is_null($key) && !in_array($key, $this->protectedKeys)) {
-            array_set($this->payload, $key, $value);
+            Arr::set($this->payload, $key, $value);
         }
 
         return $this;
@@ -39,6 +40,6 @@ class IndexPayload extends RawPayload
 
     public function get($key = null)
     {
-        return array_get($this->payload, $key);
+        return Arr::get($this->payload, $key);
     }
 }
