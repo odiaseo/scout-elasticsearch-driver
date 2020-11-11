@@ -24,7 +24,7 @@
     "php": ">=7.4",
     "elasticsearch/elasticsearch": "~5.3",
     "doctrine/instantiator": "^1.2",
-    "laravel/framework": "^7.0",
+    "laravel/framework": "^8.0",
     "laravel/scout": "^8.0"
   },
   "require-dev": {
