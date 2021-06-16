@@ -22,7 +22,7 @@
   ],
   "require": {
     "php": ">=7.4",
-    "elasticsearch/elasticsearch": "~5.3",
+    "elasticsearch/elasticsearch": "~5.3 || ~7.0",
     "doctrine/instantiator": "^1.2",
     "laravel/framework": "^8.0",
     "laravel/scout": "^8.0"
