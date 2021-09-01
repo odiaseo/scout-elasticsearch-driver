@@ -787,16 +787,16 @@
         },
         {
             "name": "laravel/scout",
-            "version": "v9.2.7",
+            "version": "v9.2.8",
             "source": {
                 "type": "git",
                 "url": "https://github.com/laravel/scout.git",
-                "reference": "0c2e25a431113cc0510ddc9680cdec6ef115be4e"
+                "reference": "0db23cc68de62b3b25b909c0d57b33c4ed585af4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laravel/scout/zipball/0c2e25a431113cc0510ddc9680cdec6ef115be4e",
-                "reference": "0c2e25a431113cc0510ddc9680cdec6ef115be4e",
+                "url": "https://api.github.com/repos/laravel/scout/zipball/0db23cc68de62b3b25b909c0d57b33c4ed585af4",
+                "reference": "0db23cc68de62b3b25b909c0d57b33c4ed585af4",
                 "shasum": ""
             },
             "require": {
@@ -810,7 +810,7 @@
                 "php": "^7.3|^8.0"
             },
             "require-dev": {
-                "meilisearch/meilisearch-php": "^0.17",
+                "meilisearch/meilisearch-php": "^0.19",
                 "mockery/mockery": "^1.0",
                 "orchestra/testbench": "^6.17",
                 "phpunit/phpunit": "^9.3"
@@ -851,7 +851,7 @@
                 "laravel",
                 "search"
             ],
-            "time": "2021-08-24T12:57:33+00:00"
+            "time": "2021-08-31T15:13:52+00:00"
         },
         {
             "name": "league/commonmark",
