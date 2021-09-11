@@ -22,37 +22,35 @@ class ConsoleCommandsTest extends TestCase
     {
         $payload = [
             'index' => 'test_index',
-            'body'  => [
+            'body' => [
                 'settings' => [
                     'analysis' => [
                         'analyzer' => [
                             'test_analyzer' => [
-                                'type'      => 'custom',
+                                'type' => 'custom',
                                 'tokenizer' => 'whitespace'
                             ]
                         ]
                     ]
                 ],
                 'mappings' => [
-                    '_default_' => [
-                        'properties' => [
-                            'test_default_field' => [
-                                'type'     => 'string',
-                                'analyzer' => 'test_analyzer'
-                            ]
+                    'properties' => [
+                        'test_default_field' => [
+                            'type' => 'string',
+                            'analyzer' => 'test_analyzer'
                         ]
                     ]
                 ]
             ]
         ];
         $indices = $this->prophesize(IndicesNamespace::class);
-        $client  = $this->prophesize(ClientInterface::class);
-        $output  = $this->prophesize(OutputInterface::class);
+        $client = $this->prophesize(ClientInterface::class);
+        $output = $this->prophesize(OutputInterface::class);
 
         $client->indices()->willReturn($indices->reveal());
         $indices->create($payload)->shouldBeCalled();
 
-        $input   = $this->getMockInputs(['index-configurator' => IndexConfiguratorStub::class]);
+        $input = $this->getMockInputs(['index-configurator' => IndexConfiguratorStub::class]);
         $command = new ElasticIndexCreateCommandStub($client->reveal(), $input, $output->reveal());
 
         $command->handle();
@@ -77,12 +75,12 @@ class ConsoleCommandsTest extends TestCase
     {
         $payload = [
             'index' => 'test_index',
-            'body'  => [
+            'body' => [
                 'settings' => [
                     'analysis' => [
                         'analyzer' => [
                             'test_analyzer' => [
-                                'type'      => 'custom',
+                                'type' => 'custom',
                                 'tokenizer' => 'whitespace'
                             ]
                         ]
@@ -93,12 +91,12 @@ class ConsoleCommandsTest extends TestCase
 
         $mapping = [
             'index' => 'test_index',
-            'type'  => '_default_',
-            'body'  => [
+            'type' => '_default_',
+            'body' => [
                 '_default_' => [
                     'properties' => [
                         'test_default_field' => [
-                            'type'     => 'string',
+                            'type' => 'string',
                             'analyzer' => 'test_analyzer'
                         ]
                     ]
@@ -107,8 +105,8 @@ class ConsoleCommandsTest extends TestCase
         ];
 
         $indices = $this->prophesize(IndicesNamespace::class);
-        $client  = $this->prophesize(ClientInterface::class);
-        $output  = $this->prophesize(OutputInterface::class);
+        $client = $this->prophesize(ClientInterface::class);
+        $output = $this->prophesize(OutputInterface::class);
 
         $client->indices()->willReturn($indices->reveal());
         $indices->putSettings($payload)->willReturn(null);
@@ -117,7 +115,7 @@ class ConsoleCommandsTest extends TestCase
         $indices->open(["index" => "test_index"])->willReturn(null);
         $indices->exists(["index" => "test_index"])->willReturn(true);
 
-        $input   = $this->getMockInputs(['index-configurator' => IndexConfiguratorStub::class]);
+        $input = $this->getMockInputs(['index-configurator' => IndexConfiguratorStub::class]);
         $command = new ElasticIndexUpdateCommandStub($client->reveal(), $input, $output->reveal());
 
         $command->handle();
@@ -128,10 +126,10 @@ class ConsoleCommandsTest extends TestCase
     {
 
         $indices = $this->prophesize(IndicesNamespace::class);
-        $client  = $this->prophesize(ClientInterface::class);
-        $output  = $this->prophesize(OutputInterface::class);
+        $client = $this->prophesize(ClientInterface::class);
+        $output = $this->prophesize(OutputInterface::class);
 
-        $input   = $this->getMockInputs(['index-configurator' => IndexConfiguratorStub::class]);
+        $input = $this->getMockInputs(['index-configurator' => IndexConfiguratorStub::class]);
         $command = new ElasticIndexDropCommandStub($client->reveal(), $input, $output->reveal());
 
         $client->indices()->willReturn($indices->reveal());
@@ -145,20 +143,20 @@ class ConsoleCommandsTest extends TestCase
     {
         $mapping = [
             'index' => 'test_index',
-            'type'  => 'test_table',
-            'body'  => [
+            'type' => 'test_table',
+            'body' => [
                 'test_table' => [
                     'properties' => [
                         'test_default_field' => [
-                            'type'     => 'string',
+                            'type' => 'string',
                             'analyzer' => 'test_analyzer'
                         ],
-                        'id'                 => [
-                            'type'  => 'integer',
+                        'id' => [
+                            'type' => 'integer',
                             'index' => 'not_analyzed'
                         ],
-                        'test_field'         => [
-                            'type'     => 'string',
+                        'test_field' => [
+                            'type' => 'string',
                             'analyzer' => 'standard'
                         ]
                     ]
@@ -166,10 +164,10 @@ class ConsoleCommandsTest extends TestCase
             ]
         ];
         $indices = $this->prophesize(IndicesNamespace::class);
-        $client  = $this->prophesize(ClientInterface::class);
-        $output  = $this->prophesize(OutputInterface::class);
+        $client = $this->prophesize(ClientInterface::class);
+        $output = $this->prophesize(OutputInterface::class);
 
-        $input   = $this->getMockInputs(['model' => ModelStub::class]);
+        $input = $this->getMockInputs(['model' => ModelStub::class]);
         $command = new ElasticUpdateMappingCommandStub($client->reveal(), $input, $output->reveal());
 
         $client->indices()->willReturn($indices->reveal());

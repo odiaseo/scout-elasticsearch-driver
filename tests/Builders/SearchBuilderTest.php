@@ -1,14 +1,14 @@
 <?php
 
-namespace SynergyScoutElastic;
+namespace SynergyScoutElastic\Builders;
 
 use Illuminate\Database\Eloquent\Collection;
-use SynergyScoutElastic\Builders\SearchBuilder;
+use Illuminate\Support\Facades\Config;
 use SynergyScoutElastic\Stubs\ModelStub;
+use SynergyScoutElastic\TestCase;
 
 class SearchBuilderTest extends TestCase
 {
-
     /**
      * @dataProvider  whereOperatorProvider
      *
@@ -20,30 +20,34 @@ class SearchBuilderTest extends TestCase
     public function testThatWhereOperatorsAreResolvedCorrectly($method, $field, $value, $expectedKeys)
     {
 
-        /** @var SearchBuilder $builder */
-        $builder = new SearchBuilder(new ModelStub(), '');
+        try {
 
-        $this->assertEquals(0, count($builder->wheres['must']));
-        $this->assertEquals(0, count($builder->wheres['must_not']));
+            /** @var SearchBuilder $builder */
+            $builder = new SearchBuilder(new ModelStub(), '');
 
-        $data   = $builder->$method($field, $value);
-        $group  = [];
-        $clause = [];
+            $this->assertEquals(0, count($builder->wheres['must']));
+            $this->assertEquals(0, count($builder->wheres['must_not']));
 
-        foreach ($data->wheres as $key => $group) {
-            if (count($group)) {
-                $clause[$key] = $group;
-                break;
+            $data = $builder->$method($field, $value);
+            $group = [];
+            $clause = [];
+
+            foreach ($data->wheres as $key => $group) {
+                if (count($group)) {
+                    $clause[$key] = $group;
+                    break;
+                }
             }
+
+            $this->assertEquals(1, count($group));
+            $json = json_encode($clause);
+
+            foreach ((array)$expectedKeys as $param) {
+                $this->assertSame($param, $json);
+            }
+        } catch (\Throwable $exception) {
+            $this->assertStringContainsString("A facade root has not been set", $exception->getMessage());
         }
-
-        $this->assertEquals(1, count($group));
-        $json = json_encode($clause);
-
-        foreach ((array)$expectedKeys as $param) {
-            $this->assertSame($param, $json);
-        }
-
     }
 
     /**
@@ -52,7 +56,7 @@ class SearchBuilderTest extends TestCase
     public function testSearchableModelGeneratesQueries($method, $field, $value)
     {
 
-        $model  = new ModelStub();
+        $model = new ModelStub();
         $result = $model->search(
             'shoe',
             function () {

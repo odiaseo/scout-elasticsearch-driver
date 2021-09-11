@@ -27,7 +27,7 @@ class ElasticIndexCreateCommand extends BaseCommand
     {
         $payload = (new IndexPayload($configurator))
             ->setIfNotEmpty('body.settings', $configurator->getSettings())
-            ->setIfNotEmpty('body.mappings._default_', $configurator->getDefaultMapping())
+            ->setIfNotEmpty('body.mappings', $configurator->getDefaultMapping())
             ->setIfNotEmpty('body.aliases', $configurator->getAliases())
             ->get();
 

@@ -15,7 +15,7 @@ class ScoutElasticServiceProviderTest extends TestCase
     /**
      * @var Application
      */
-    private $app;
+    protected $app;
 
     /**
      * @var ScoutElasticServiceProvider

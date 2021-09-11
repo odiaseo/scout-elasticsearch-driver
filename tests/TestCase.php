@@ -6,9 +6,11 @@ use Illuminate\Config\Repository;
 use Laravel\Scout\EngineManager;
 use Mockery;
 use PHPUnit\Framework\TestCase as PhpUnitTestCase;
+use Prophecy\PhpUnit\ProphecyTrait;
 
 class TestCase extends PhpUnitTestCase
 {
+    use ProphecyTrait;
 
     protected function tearDown(): void
     {

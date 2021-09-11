@@ -76,7 +76,7 @@ class ElasticEngine extends Engine
     public function __construct(Kernel $kernel, ClientInterface $elasticClient, bool $updateMapping)
     {
         $this->elasticClient = $elasticClient;
-        $this->kernel        = $kernel;
+        $this->kernel = $kernel;
         $this->updateMapping = $updateMapping;
     }
 
@@ -116,7 +116,7 @@ class ElasticEngine extends Engine
             } catch (Exception $exception) {
                 $data = [
                     'payload' => $array,
-                    'error'   => $exception->__toString()
+                    'error' => $exception->__toString()
                 ];
 
                 $this->getLogger()->error($data);
@@ -134,7 +134,7 @@ class ElasticEngine extends Engine
      */
     public function bulkUpdate(Collection $models)
     {
-        $model       = $models->first();
+        $model = $models->first();
         $bulkPayload = new TypePayload($model);
 
         $models->each(function ($model) use ($bulkPayload) {
@@ -201,7 +201,7 @@ class ElasticEngine extends Engine
     public function search(Builder $builder)
     {
         $options['limit'] = $this->limit;
-        $options['page']  = $this->page;
+        $options['page'] = $this->page;
 
         $res = $this->performSearch($builder, $options);
 
@@ -242,7 +242,7 @@ class ElasticEngine extends Engine
     {
         return $this->performSearch($builder, [
             'limit' => $perPage,
-            'page'  => $page
+            'page' => $page
         ]);
     }
 
@@ -270,13 +270,13 @@ class ElasticEngine extends Engine
             });
         }
 
-        $ids      = $this->mapIds($results);
+        $ids = $this->mapIds($results);
         $modelKey = $model->getKeyName();
 
         if (is_array($this->fields)) {
-            $fields   = $this->fields;
+            $fields = $this->fields;
             $fields[] = $modelKey;
-            $fields   = array_unique($fields);
+            $fields = array_unique($fields);
 
             $model = $model->select($fields);
         }
@@ -316,7 +316,7 @@ class ElasticEngine extends Engine
     private function pluckFields(array $values, array $fields)
     {
         $array = [];
-        $res   = Arr::only(Arr::dot($values), $fields);
+        $res = Arr::only(Arr::dot($values), $fields);
 
         foreach ($res as $key => $value) {
             Arr::set($array, $key, $value);
@@ -439,5 +439,20 @@ class ElasticEngine extends Engine
     public function flush($model)
     {
         $model->save();
+    }
+
+    public function lazyMap(Builder $builder, $results, $model)
+    {
+        return [];
+    }
+
+    public function createIndex($name, array $options = [])
+    {
+        return [];
+    }
+
+    public function deleteIndex($name)
+    {
+        return [];
     }
 }
