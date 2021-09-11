@@ -154,10 +154,30 @@ class ElasticEngine extends Engine
         });
 
         try {
-            $this->elasticClient->bulk($bulkPayload->get());
+            $result = $this->elasticClient->bulk($bulkPayload->get());
+            $errors = $this->processErrorMessages($result);
+            if (empty($errors)) {
+                return true;
+            }
+            $this->getLogger()->error('Bulk import errors:', $errors);
         } catch (Exception $exception) {
             $this->getLogger()->error($exception->__toString());
         }
+        return false;
+    }
+
+    protected function processErrorMessages($result)
+    {
+        if (!is_array($result) || empty($result['errors'])) {
+            return [];
+        }
+        $messages = [];
+
+        foreach ($result['items'] as $record) {
+            $messages[] = Arr::get($record, 'index.error.reason');
+        }
+
+        return $messages;
     }
 
     /**
