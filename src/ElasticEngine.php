@@ -290,20 +290,25 @@ class ElasticEngine extends Engine
             });
         }
 
-        $ids = $this->mapIds($results);
-        $modelKey = $model->getKeyName();
+        if ($model instanceof HydrateableModel) {
+            $models = $model->hydrateSearchResult($results);
+        } else {
 
-        if (is_array($this->fields)) {
-            $fields = $this->fields;
-            $fields[] = $modelKey;
-            $fields = array_unique($fields);
+            $ids = $this->mapIds($results);
+            $modelKey = $model->getKeyName();
 
-            $model = $model->select($fields);
+            if (is_array($this->fields)) {
+                $fields = $this->fields;
+                $fields[] = $modelKey;
+                $fields = array_unique($fields);
+
+                $model = $model->select($fields);
+            }
+
+            $models = $model->whereIn($modelKey, $ids)
+                ->get()
+                ->keyBy($modelKey);
         }
-
-        $models = $model->whereIn($modelKey, $ids)
-            ->get()
-            ->keyBy($modelKey);
 
         return Collection::make($results['hits']['hits'])
             ->map(function ($hit) use ($models) {
