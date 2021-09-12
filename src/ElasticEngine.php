@@ -218,6 +218,19 @@ class ElasticEngine extends Engine
      *
      * @return mixed
      */
+    public function find(Builder $builder)
+    {
+        $options['limit'] = 1;
+        $options['page'] = 0;
+
+        return $this->performSearch($builder, $options);
+    }
+
+    /**
+     * @param Builder $builder
+     *
+     * @return mixed
+     */
     public function search(Builder $builder)
     {
         $options['limit'] = $this->limit;

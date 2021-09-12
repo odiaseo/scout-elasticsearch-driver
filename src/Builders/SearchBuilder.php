@@ -16,8 +16,8 @@ use SynergyScoutElastic\Models\SearchableInterface;
 class SearchBuilder extends Builder
 {
     public $wheres = [
-        'must'     => [],
-        'should'   => [],
+        'must' => [],
+        'should' => [],
         'must_not' => []
     ];
 
@@ -62,7 +62,7 @@ class SearchBuilder extends Builder
      * Supported operators are =, &gt;, &lt;, &gt;=, &lt;=, &lt;&gt;
      *
      * @param string $field Field name
-     * @param mixed  $value Scalar value or an array
+     * @param mixed $value Scalar value or an array
      *
      * @return $this
      */
@@ -75,7 +75,7 @@ class SearchBuilder extends Builder
 
     /**
      * @param string $field
-     * @param mixed  $value
+     * @param mixed $value
      * @param string $boolOperator
      *
      * @return $this
@@ -278,6 +278,18 @@ class SearchBuilder extends Builder
      *
      * @return $this
      */
+    public function setStrategy($rule)
+    {
+        $this->strategies = (array)$rule;
+
+        return $this;
+    }
+
+    /**
+     * @param $rule
+     *
+     * @return $this
+     */
     public function strategy($rule)
     {
         $this->strategies[] = $rule;
@@ -315,5 +327,21 @@ class SearchBuilder extends Builder
         $this->engine()->setPage((int)$offset);
 
         return $this;
+    }
+
+    /**
+     * Find an item using the elastic search _id attribute
+     * @param mixed $id
+     * @return mixed
+     */
+    public function findOneById($id)
+    {
+        $this->query = $id;
+        $engine = $this->engine();
+        $results = $this->model->newCollection(
+            $engine->map($this, $engine->find($this), $this->model)->all()
+        );
+
+        return $results->first();
     }
 }
