@@ -329,7 +329,7 @@ class ElasticEngine extends Engine
      */
     public function getTotalCount($results)
     {
-        return (int)$results['hits']['total'];
+        return (int)Arr::get($results, 'hits.total.value', count($results['hits']['hits']));
     }
 
     /**
