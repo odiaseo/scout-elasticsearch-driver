@@ -278,9 +278,9 @@ class ElasticEngine extends Engine
             return Collection::make([]);
         }
 
-        if ($this->rawResult) {
-            $useAll = empty($this->fields) || '*' === $this->fields || !is_array($this->fields);
+        $useAll = empty($this->fields) || '*' === $this->fields || !is_array($this->fields);
 
+        if ($this->rawResult) {
             return Collection::make($results['hits']['hits'])->map(function ($hit) use ($useAll) {
                 if ($useAll) {
                     return $hit['_source'];
@@ -311,14 +311,21 @@ class ElasticEngine extends Engine
         }
 
         return Collection::make($results['hits']['hits'])
-            ->map(function ($hit) use ($models) {
+            ->map(function ($hit) use ($models, $useAll) {
                 $id = $hit['_id'];
 
-                if (isset($models[$id])) {
-                    return $this->appendDebugInfo($models[$id], $hit);
+                if (!isset($models[$id])) {
+                    return [];
                 }
 
-                return [];
+                $row = $this->appendDebugInfo($models[$id], $hit);
+
+                if ($useAll) {
+                    return $row;
+                }
+                $arr = is_array($row) ? $row : $row->toArray();
+                return $this->pluckFields($arr, $this->fields);
+
             })->filter()->values();
     }
 
